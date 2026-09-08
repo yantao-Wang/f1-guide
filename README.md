@@ -17,11 +17,20 @@ Go + chi + PostgreSQL + sqlx · OpenAPI 契约先行 · Go html/template 服务�
 # 1. 安装工具
 make tools          # golangci-lint
 
-# 2. 启动 PostgreSQL
-make docker-up
+# 2. 启动 PostgreSQL 并初始化
+make docker-up      # 启动本地 PostgreSQL 17
+make migrate-up     # 应用迁移（嵌入式，随二进制分发）
+make seed           # 导入示例数据（占位内容）
 
 # 3. 运行 API（:8080）
 make run
+```
+
+集成测试（真实 PostgreSQL）：
+
+```bash
+export F1GUIDE_TEST_DATABASE_URL=postgres://f1guide:f1guide@localhost:5432/f1guide?sslmode=disable
+go test -tags=integration ./tests/integration/...
 ```
 
 ## 质量门禁（CI 自动执行）
@@ -30,9 +39,10 @@ make run
 | --- | --- | --- |
 | 静态分析 | golangci-lint | 零警告 |
 | 单元测试 | go test | 全部通过 |
-| 测试覆盖率 | go test -cover | ≥70% |
+| 测试覆盖率 | go test -cover | ≥70%（口径 internal + pkg） |
+| 契约测试 | kin-openapi 校验 api/openapi.yaml | 全部通过 |
+| 集成测试 | 真实 PostgreSQL（CI service container） | 全部通过 |
 | 依赖漏洞 | govulncheck | 零高危 |
-| API 契约 | 基于 api/openapi.yaml 的契约测试 | 全部通过 |
 | 编译 | go build | 无错误 |
 
 ## 目录结构
@@ -49,10 +59,10 @@ internal/
   middleware/      # 中间件
 pkg/
   logger/          # 结构化日志
-  db/              # 数据库连接
+  db/              # 数据库连接 + 嵌入式迁移（pkg/db/migrations/）
   f1api/           # 外部 F1 API 客户端
 api/openapi.yaml   # API 契约（契约先行）
-migrations/        # 数据库迁移
+seeds/             # 本地开发示例数据
 tests/             # 集成测试 / 契约测试
 ```
 

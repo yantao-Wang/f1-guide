@@ -1,0 +1,4 @@
+DROP TABLE IF EXISTS moment_drivers;
+DROP TABLE IF EXISTS moments;
+DROP TABLE IF EXISTS tracks;
+DROP TABLE IF EXISTS drivers;

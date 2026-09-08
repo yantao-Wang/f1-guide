@@ -11,7 +11,11 @@ import (
 	"time"
 
 	"github.com/yantao-Wang/f1-guide/internal/config"
+	"github.com/yantao-Wang/f1-guide/internal/handler"
+	"github.com/yantao-Wang/f1-guide/internal/repository"
 	"github.com/yantao-Wang/f1-guide/internal/router"
+	"github.com/yantao-Wang/f1-guide/internal/service"
+	"github.com/yantao-Wang/f1-guide/pkg/db"
 	"github.com/yantao-Wang/f1-guide/pkg/logger"
 )
 
@@ -26,9 +30,20 @@ func main() {
 	cfg := config.Load()
 	log := logger.New(cfg.LogLevel)
 
+	// 数据层启动即连接：数据库不可用时快速失败，暴露配置问题。
+	pg, err := db.Open(cfg.DatabaseURL)
+	if err != nil {
+		log.Error("connect database failed", "error", err)
+		os.Exit(1)
+	}
+	defer func() { _ = pg.Close() }()
+
+	repo := repository.New(pg)
+	svc := service.NewContent(repo, repo, repo)
+
 	srv := &http.Server{
 		Addr:         cfg.HTTPAddr,
-		Handler:      router.New(log),
+		Handler:      router.New(log, handler.NewHealth(log), handler.NewContent(svc)),
 		ReadTimeout:  readTimeout,
 		WriteTimeout: writeTimeout,
 		IdleTimeout:  idleTimeout,

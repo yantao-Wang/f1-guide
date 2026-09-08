@@ -12,15 +12,25 @@ import (
 )
 
 // New 构建应用路由器。所有新路由在此注册，handler 层不感知路由结构。
-func New(log *slog.Logger) http.Handler {
+// 依赖由 main 组装后传入，路由只做注册。
+func New(log *slog.Logger, health *handler.Health, content *handler.Content) http.Handler {
 	r := chi.NewRouter()
 
 	r.Use(middleware.RequestID)
 	r.Use(middleware.Logger)
 	r.Use(middleware.Recoverer)
 
-	health := handler.NewHealth(log)
 	r.Get("/health", health.Health)
+
+	// API v1（对应 api/openapi.yaml）
+	r.Route("/api/v1", func(r chi.Router) {
+		r.Get("/drivers", content.ListDrivers)
+		r.Get("/drivers/{slug}", content.GetDriver)
+		r.Get("/tracks", content.ListTracks)
+		r.Get("/tracks/{slug}", content.GetTrack)
+		r.Get("/moments", content.ListMoments)
+		r.Get("/moments/{slug}", content.GetMoment)
+	})
 
 	return r
 }

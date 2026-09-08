@@ -6,11 +6,17 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"testing"
+
+	"github.com/yantao-Wang/f1-guide/internal/handler"
+	"github.com/yantao-Wang/f1-guide/internal/service"
+	"github.com/yantao-Wang/f1-guide/internal/testutil"
 )
 
 func newTestRouter() http.Handler {
 	log := slog.New(slog.NewTextHandler(io.Discard, nil))
-	return New(log)
+	store := &testutil.FakeStore{}
+	svc := service.NewContent(store, store, store)
+	return New(log, handler.NewHealth(log), handler.NewContent(svc))
 }
 
 func TestHealthRoute(t *testing.T) {
@@ -37,5 +43,23 @@ func TestUnknownRoute(t *testing.T) {
 
 	if rec.Code != http.StatusNotFound {
 		t.Fatalf("status = %d, want %d", rec.Code, http.StatusNotFound)
+	}
+}
+
+func TestContentRoutesRegistered(t *testing.T) {
+	r := newTestRouter()
+
+	paths := []string{"/api/v1/drivers", "/api/v1/tracks", "/api/v1/moments"}
+	for _, path := range paths {
+		req := httptest.NewRequest(http.MethodGet, path, nil)
+		rec := httptest.NewRecorder()
+		r.ServeHTTP(rec, req)
+
+		if rec.Code != http.StatusOK {
+			t.Errorf("GET %s status = %d, want %d", path, rec.Code, http.StatusOK)
+		}
+		if ct := rec.Header().Get("Content-Type"); ct != "application/json" {
+			t.Errorf("GET %s content-type = %q, want application/json", path, ct)
+		}
 	}
 }
