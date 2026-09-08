@@ -28,13 +28,9 @@ func Load() Config {
 	v.SetDefault("log_level", "info")
 	v.SetDefault("database_url", "postgres://f1guide:f1guide@localhost:5432/f1guide?sslmode=disable")
 
-	cfg := Config{
+	return Config{
 		HTTPAddr:    v.GetString("http_addr"),
 		LogLevel:    v.GetString("log_level"),
 		DatabaseURL: v.GetString("database_url"),
 	}
-	if cfg.HTTPAddr == "" {
-		panic("invalid config: http_addr is empty")
-	}
-	return cfg
 }

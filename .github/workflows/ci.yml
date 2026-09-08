@@ -30,7 +30,8 @@ jobs:
         with:
           go-version: "1.27.x"
       - name: 运行测试并生成覆盖率
-        run: go test -coverprofile=cover.out ./...
+        # 口径：可测试代码（internal + pkg）；cmd/api 的 main 函数不参与单测
+        run: go test -coverprofile=cover.out ./internal/... ./pkg/...
       - name: 校验覆盖率 ≥70%
         run: |
           total=$(go tool cover -func=cover.out | grep '^total:' | awk '{gsub("%","",$3); print $3}')

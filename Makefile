@@ -12,8 +12,8 @@ build: ## 编译全部包
 test: ## 运行全部测试
 	go test ./...
 
-cover: ## 测试 + 覆盖率报告
-	go test -coverprofile=cover.out ./...
+cover: ## 测试 + 覆盖率报告（口径：internal + pkg，与 CI 一致）
+	go test -coverprofile=cover.out ./internal/... ./pkg/...
 	go tool cover -func=cover.out | tail -1
 
 lint: ## 静态检查（golangci-lint，CI 同款）
