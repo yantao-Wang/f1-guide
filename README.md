@@ -9,7 +9,7 @@
 
 ## 技术栈
 
-Go + chi + PostgreSQL + sqlx · OpenAPI 契约先行 · Go html/template 服务端渲染 · Docker · GitHub Actions CI
+Go + chi + PostgreSQL + sqlx · OpenAPI 契约先行 · Go html/template 服务端渲染 · Jolpica 赛事数据（缓存 + 降级） · Docker · GitHub Actions CI
 
 ## 本地开发
 
@@ -42,6 +42,15 @@ go test -tags=integration ./tests/integration/...
 | Go 模块 | proxy.golang.org 超时 | 已持久配置 `GOPROXY=https://goproxy.cn,direct`（`go env -w`） |
 | Colima VM 镜像 | GitHub CDN 限速（实测 ~28KB/s） | 挂本机代理重启：`HTTPS_PROXY=http://127.0.0.1:7897 colima start`（断点续传，端口按本机代理实际配置） |
 | Docker Hub 镜像 | 目前直连可用 | 如变慢，给 colima 的 Docker daemon 配置镜像加速器 |
+
+### 赛事数据接入（Jolpica）
+
+赛程与积分榜来自 [Jolpica](https://api.jolpi.ca/ergast/f1/)（Ergast 数据镜像，免费、限速 500 req/h）：
+
+- 本地内存 TTL 缓存：积分榜 30 分钟、赛程 1 小时（上游正赛后约 1 小时更新数据）
+- 上游地址可用 `F1API_BASE_URL` 覆盖；国内联调时指向本地代理
+- 降级策略：上游故障时页面渲染提示文案（首页/赛程/数据页均不中断），JSON API 返回 `502 upstream_unavailable`
+- 中文映射（车队色/车队名/车手名/大奖赛名/赛道名）维护于 `internal/service/stats_mappings.go`，新增内容车手时同步补 `driverSlugs`
 
 ### 故障排查
 

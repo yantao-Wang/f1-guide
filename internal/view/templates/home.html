@@ -59,9 +59,29 @@
     <h2>积分榜速览</h2>
     <a class="section-more" href="/data">完整数据 →</a>
   </div>
-  <div class="card placeholder-card">
-    <p>🏗️ 赛事数据接入中 —— 赛果与积分榜将随 Jolpica 数据管道点亮（预计 10 月下旬）</p>
+  {{if .Data.Standings}}
+  <div class="card table-card">
+    <table class="standings-table">
+      <thead>
+        <tr><th>名次</th><th>车手</th><th>车队</th><th class="num">积分</th></tr>
+      </thead>
+      <tbody>
+        {{range .Data.Standings}}
+        <tr>
+          <td class="pos">{{.Position}}</td>
+          <td>{{if .Linkable}}<a class="standings-link" href="/stories/drivers/{{.DriverSlug}}">{{.DriverName}}</a>{{else}}{{.DriverName}}{{end}}</td>
+          <td><span class="team-dot" style="--team-color: {{.Team.Color}}"></span>{{.Team.Name}}</td>
+          <td class="num strong">{{.Points}}</td>
+        </tr>
+        {{end}}
+      </tbody>
+    </table>
   </div>
+  {{else}}
+  <div class="card placeholder-card">
+    <p>🏗️ 积分榜数据暂不可用 —— 数据源恢复后自动点亮</p>
+  </div>
+  {{end}}
 </section>
 
 <section class="section">

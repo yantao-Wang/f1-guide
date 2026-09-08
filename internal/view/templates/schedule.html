@@ -1,0 +1,70 @@
+{{define "schedule"}}{{template "layout" .}}{{end}}
+
+{{define "content"}}
+{{$d := .Data}}
+<h1 class="page-title">赛程</h1>
+<p class="page-lead">{{$d.Season}} 赛季 · 已完赛 {{len $d.Completed}} 站 / 未开赛 {{len $d.Upcoming}} 站 —— 数据来自 Jolpica，正赛后约 1 小时更新</p>
+
+{{if $d.Failed}}
+<div class="card placeholder-card">
+  <p>⚠️ 赛事数据源暂不可用，请稍后再来。</p>
+</div>
+{{else}}
+{{if $d.Completed}}
+<section class="section">
+  <div class="section-head"><h2>已完赛</h2></div>
+  <div class="race-list">
+    {{range $d.Completed}}
+    <div class="card race-row">
+      <span class="race-round">R{{.Round}}</span>
+      <div class="race-main">
+        <h3>{{.GrandPrix}}</h3>
+        <p class="race-sub">{{.Date}} · {{.Circuit}} · {{.Country}}</p>
+      </div>
+      <div class="race-result">
+        <span class="badge badge-done">已完赛</span>
+        <span class="race-winner">🏆 {{.WinnerName}}</span>
+      </div>
+    </div>
+    {{end}}
+  </div>
+</section>
+{{end}}
+
+{{if $d.Cancelled}}
+<section class="section">
+  <div class="section-head"><h2>已取消</h2></div>
+  <div class="race-list">
+    {{range $d.Cancelled}}
+    <div class="card race-row">
+      <span class="race-round">R{{.Round}}</span>
+      <div class="race-main">
+        <h3>{{.GrandPrix}}</h3>
+        <p class="race-sub">{{.Date}} · {{.Circuit}} · {{.Country}}</p>
+      </div>
+      <span class="badge badge-red">已取消</span>
+    </div>
+    {{end}}
+  </div>
+</section>
+{{end}}
+
+{{if $d.Upcoming}}
+<section class="section">
+  <div class="section-head"><h2>未开赛</h2></div>
+  <div class="race-list">
+    {{range $d.Upcoming}}
+    <div class="card race-row">
+      <span class="race-round">R{{.Round}}</span>
+      <div class="race-main">
+        <h3>{{.GrandPrix}}</h3>
+        <p class="race-sub">{{.Date}} · {{.Circuit}} · {{.Country}}</p>
+      </div>
+      <span class="badge">未开赛</span>
+    </div>
+    {{end}}
+  </div>
+</section>
+{{end}}
+{{end}}
+{{end}}

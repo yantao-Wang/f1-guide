@@ -127,8 +127,12 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Schedule"
+        "400":
+          $ref: "#/components/responses/BadRequest"
         "500":
           $ref: "#/components/responses/InternalError"
+        "502":
+          $ref: "#/components/responses/UpstreamError"
   /standings/drivers:
     get:
       operationId: getDriverStandings
@@ -142,8 +146,12 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/DriverStandings"
+        "400":
+          $ref: "#/components/responses/BadRequest"
         "500":
           $ref: "#/components/responses/InternalError"
+        "502":
+          $ref: "#/components/responses/UpstreamError"
   /standings/constructors:
     get:
       operationId: getConstructorStandings
@@ -157,8 +165,12 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/ConstructorStandings"
+        "400":
+          $ref: "#/components/responses/BadRequest"
         "500":
           $ref: "#/components/responses/InternalError"
+        "502":
+          $ref: "#/components/responses/UpstreamError"
 
 components:
   parameters:
@@ -210,8 +222,20 @@ components:
         application/json:
           schema:
             $ref: "#/components/schemas/Error"
+    BadRequest:
+      description: 请求参数不合法
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
     InternalError:
       description: 服务器内部错误
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
+    UpstreamError:
+      description: 上游赛事数据源（Jolpica）不可用
       content:
         application/json:
           schema:

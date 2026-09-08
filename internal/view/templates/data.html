@@ -1,0 +1,56 @@
+{{define "data"}}{{template "layout" .}}{{end}}
+
+{{define "content"}}
+{{$d := .Data}}
+<h1 class="page-title">赛事数据</h1>
+<p class="page-lead">{{$d.Season}} 赛季积分榜 —— 数据来自 Jolpica，每 30 分钟刷新一次</p>
+
+{{if $d.Failed}}
+<div class="card placeholder-card">
+  <p>⚠️ 赛事数据源暂不可用，请稍后再来。</p>
+</div>
+{{else}}
+<section class="section">
+  <div class="section-head"><h2>车手积分榜</h2></div>
+  <div class="card table-card">
+    <table class="standings-table">
+      <thead>
+        <tr><th>名次</th><th>车手</th><th>车队</th><th class="num">胜场</th><th class="num">积分</th></tr>
+      </thead>
+      <tbody>
+        {{range $d.DriverStandings}}
+        <tr>
+          <td class="pos">{{.Position}}</td>
+          <td>{{if .Linkable}}<a class="standings-link" href="/stories/drivers/{{.DriverSlug}}">{{.DriverName}}</a>{{else}}{{.DriverName}}{{end}}</td>
+          <td><span class="team-dot" style="--team-color: {{.Team.Color}}"></span>{{.Team.Name}}</td>
+          <td class="num">{{.Wins}}</td>
+          <td class="num strong">{{.Points}}</td>
+        </tr>
+        {{end}}
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<section class="section">
+  <div class="section-head"><h2>车队积分榜</h2></div>
+  <div class="card table-card">
+    <table class="standings-table">
+      <thead>
+        <tr><th>名次</th><th>车队</th><th class="num">胜场</th><th class="num">积分</th></tr>
+      </thead>
+      <tbody>
+        {{range $d.ConstructorStandings}}
+        <tr>
+          <td class="pos">{{.Position}}</td>
+          <td><span class="team-dot" style="--team-color: {{.Team.Color}}"></span>{{.Team.Name}}</td>
+          <td class="num">{{.Wins}}</td>
+          <td class="num strong">{{.Points}}</td>
+        </tr>
+        {{end}}
+      </tbody>
+    </table>
+  </div>
+</section>
+{{end}}
+{{end}}

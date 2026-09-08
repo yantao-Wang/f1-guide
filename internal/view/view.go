@@ -57,6 +57,8 @@ var pageNames = []string{
 	"track_detail",
 	"moments",
 	"moment_detail",
+	"schedule",
+	"data",
 	"about",
 	"stub",
 	"error_404",

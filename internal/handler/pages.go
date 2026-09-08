@@ -5,6 +5,7 @@ import (
 	"errors"
 	"log/slog"
 	"net/http"
+	"sort"
 
 	"github.com/go-chi/chi/v5"
 
@@ -14,14 +15,15 @@ import (
 )
 
 // Pages 是服务端渲染页面的处理器（Go html/template，决策 D4）。
-// API 处理器与页面处理器职责分离：JSON 走 Content，HTML 走 Pages。
+// API 处理器与页面处理器职责分离：JSON 走 Content/Stats，HTML 走 Pages。
 type Pages struct {
-	svc *service.Content
+	svc   *service.Content
+	stats *service.Stats
 }
 
 // NewPages 创建页面处理器。
-func NewPages(svc *service.Content) *Pages {
-	return &Pages{svc: svc}
+func NewPages(svc *service.Content, stats *service.Stats) *Pages {
+	return &Pages{svc: svc, stats: stats}
 }
 
 // --- 页面数据载荷 ---
@@ -31,6 +33,28 @@ type homeData struct {
 	TrackCount  int
 	MomentCount int
 	Featured    []domain.DriverSummary
+	Standings   []standingsRow
+}
+
+// standingsRow 积分榜展示行：Linkable 表示该车手在站内有故事页（可挂链接）。
+type standingsRow struct {
+	domain.DriverStandingRow
+	Linkable bool
+}
+
+type scheduleData struct {
+	Season    int
+	Upcoming  []domain.Race
+	Completed []domain.Race
+	Cancelled []domain.Race
+	Failed    bool
+}
+
+type dataPageData struct {
+	Season               int
+	DriverStandings      []standingsRow
+	ConstructorStandings []domain.ConstructorStandingRow
+	Failed               bool
 }
 
 type driversData struct {
@@ -98,7 +122,8 @@ func renderPage(w http.ResponseWriter, name string, page view.Page) {
 
 // --- 页面处理器 ---
 
-// Home 首页：Hero + 四大入口 + 精选 + 积分榜占位 + 测验入口（报告 §5.4）。
+// Home 首页：Hero + 四大入口 + 精选 + 积分榜速览 + 测验入口（报告 §5.4）。
+// 积分榜数据不可用时降级为占位文案，不影响其余模块渲染。
 func (h *Pages) Home(w http.ResponseWriter, r *http.Request) {
 	drivers, err := h.svc.ListDrivers(r.Context(), nil)
 	if err != nil {
@@ -131,8 +156,30 @@ func (h *Pages) Home(w http.ResponseWriter, r *http.Request) {
 			TrackCount:  len(tracks),
 			MomentCount: len(moments),
 			Featured:    featured,
+			Standings:   h.topStandings(r, drivers, 5),
 		},
 	})
+}
+
+// topStandings 取车手积分榜前 n 行；上游不可用时返回 nil（模板渲染占位）。
+func (h *Pages) topStandings(r *http.Request, drivers []domain.DriverSummary, n int) []standingsRow {
+	standings, err := h.stats.DriverStandings(r.Context(), 0)
+	if err != nil {
+		slog.Warn("standings unavailable, render placeholder", "error", err)
+		return nil
+	}
+	slugSet := make(map[string]bool, len(drivers))
+	for _, d := range drivers {
+		slugSet[d.Slug] = true
+	}
+	if len(standings.Items) < n {
+		n = len(standings.Items)
+	}
+	rows := make([]standingsRow, 0, n)
+	for _, row := range standings.Items[:n] {
+		rows = append(rows, standingsRow{DriverStandingRow: row, Linkable: slugSet[row.DriverSlug]})
+	}
+	return rows
 }
 
 // Drivers 车手故事列表页。
@@ -240,6 +287,94 @@ func (h *Pages) About(w http.ResponseWriter, _ *http.Request) {
 	renderPage(w, "about", view.Page{
 		Title:  "关于",
 		Active: "about",
+	})
+}
+
+// Schedule 赛程页：已完赛（近→远）+ 已取消 + 未开赛（按轮次）。
+// 上游不可用时仍返回 200，页面渲染降级提示。
+func (h *Pages) Schedule(w http.ResponseWriter, r *http.Request) {
+	sched, err := h.stats.Schedule(r.Context(), 0)
+	if err != nil {
+		slog.Warn("schedule page data unavailable", "error", err)
+		renderPage(w, "schedule", view.Page{
+			Title:  "赛程",
+			Active: "schedule",
+			Data:   scheduleData{Failed: true},
+		})
+		return
+	}
+
+	upcoming := make([]domain.Race, 0)
+	completed := make([]domain.Race, 0)
+	cancelled := make([]domain.Race, 0)
+	for _, race := range sched.Races {
+		switch race.Status {
+		case domain.RaceStatusCompleted:
+			completed = append(completed, race)
+		case domain.RaceStatusCancelled:
+			cancelled = append(cancelled, race)
+		default:
+			upcoming = append(upcoming, race)
+		}
+	}
+	sort.Slice(completed, func(i, j int) bool { return completed[i].Round > completed[j].Round })
+
+	renderPage(w, "schedule", view.Page{
+		Title:  "赛程",
+		Active: "schedule",
+		Data: scheduleData{
+			Season:    sched.Season,
+			Upcoming:  upcoming,
+			Completed: completed,
+			Cancelled: cancelled,
+		},
+	})
+}
+
+// Data 赛事数据页：车手积分榜 + 车队积分榜。上游不可用时渲染降级提示。
+func (h *Pages) Data(w http.ResponseWriter, r *http.Request) {
+	ds, err := h.stats.DriverStandings(r.Context(), 0)
+	if err != nil {
+		slog.Warn("data page standings unavailable", "error", err)
+		renderPage(w, "data", view.Page{
+			Title:  "赛事数据",
+			Active: "data",
+			Data:   dataPageData{Failed: true},
+		})
+		return
+	}
+	cs, err := h.stats.ConstructorStandings(r.Context(), 0)
+	if err != nil {
+		slog.Warn("data page standings unavailable", "error", err)
+		renderPage(w, "data", view.Page{
+			Title:  "赛事数据",
+			Active: "data",
+			Data:   dataPageData{Failed: true},
+		})
+		return
+	}
+
+	rows := make([]standingsRow, 0, len(ds.Items))
+	slugSet := map[string]bool{}
+	if drivers, err := h.svc.ListDrivers(r.Context(), nil); err == nil {
+		for _, d := range drivers {
+			slugSet[d.Slug] = true
+		}
+	} else {
+		slog.Warn("driver slug set unavailable, standings 链接降级", "error", err)
+	}
+	for _, row := range ds.Items {
+		rows = append(rows, standingsRow{DriverStandingRow: row, Linkable: slugSet[row.DriverSlug]})
+	}
+
+	renderPage(w, "data", view.Page{
+		Title:  "赛事数据",
+		Active: "data",
+		Data: dataPageData{
+			Season:               ds.Season,
+			DriverStandings:      rows,
+			ConstructorStandings: cs.Items,
+		},
 	})
 }
 

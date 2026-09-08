@@ -6,6 +6,7 @@ package contract
 import (
 	"bytes"
 	"context"
+	"errors"
 	"io"
 	"log/slog"
 	"net/http"
@@ -74,7 +75,8 @@ func newAppRouter() http.Handler {
 		MomentDetail: testutil.SampleMoment(),
 	}
 	svc := service.NewContent(store, store, store)
-	return router.New(log, handler.NewHealth(log), handler.NewContent(svc), handler.NewPages(svc))
+	statsSvc := service.NewStats(&testutil.FakeStatsClient{})
+	return router.New(log, handler.NewHealth(log), handler.NewContent(svc), handler.NewStats(statsSvc), handler.NewPages(svc, statsSvc))
 }
 
 // validateResponse 用 kin-openapi 校验实际响应符合契约。
@@ -115,6 +117,11 @@ func TestContentEndpointsMatchContract(t *testing.T) {
 		{"GET", "/api/v1/tracks/shanghai"},
 		{"GET", "/api/v1/moments"},
 		{"GET", "/api/v1/moments/2021-abu-dhabi"},
+		{"GET", "/api/v1/schedule"},
+		{"GET", "/api/v1/schedule?season=2026"},
+		{"GET", "/api/v1/standings/drivers"},
+		{"GET", "/api/v1/standings/drivers?season=2026"},
+		{"GET", "/api/v1/standings/constructors"},
 	}
 	for _, c := range cases {
 		req := httptest.NewRequest(c.method, c.target, nil)
@@ -142,4 +149,47 @@ func TestNotFoundResponseMatchesContract(t *testing.T) {
 		t.Fatalf("status = %d, want %d", rec.Code, http.StatusNotFound)
 	}
 	validateResponse(t, contractRouter, req, rec)
+}
+
+func TestBadSeasonResponseMatchesContract(t *testing.T) {
+	doc := loadDoc(t)
+	appRouter := newAppRouter()
+	contractRouter := mustNewRouter(t, doc)
+
+	req := httptest.NewRequest(http.MethodGet, "/api/v1/schedule?season=abc", nil)
+	rec := httptest.NewRecorder()
+	appRouter.ServeHTTP(rec, req)
+
+	if rec.Code != http.StatusBadRequest {
+		t.Fatalf("status = %d, want %d", rec.Code, http.StatusBadRequest)
+	}
+	validateResponse(t, contractRouter, req, rec)
+}
+
+func TestUpstreamErrorResponseMatchesContract(t *testing.T) {
+	doc := loadDoc(t)
+	contractRouter := mustNewRouter(t, doc)
+
+	// 上游数据源故障时的应用路由器
+	log := slog.New(slog.NewTextHandler(io.Discard, nil))
+	store := &testutil.FakeStore{}
+	svc := service.NewContent(store, store, store)
+	statsSvc := service.NewStats(&testutil.FakeStatsClient{Err: errors.New("upstream down")})
+	appRouter := router.New(log, handler.NewHealth(log), handler.NewContent(svc), handler.NewStats(statsSvc), handler.NewPages(svc, statsSvc))
+
+	for _, target := range []string{
+		"/api/v1/schedule",
+		"/api/v1/standings/drivers",
+		"/api/v1/standings/constructors",
+	} {
+		req := httptest.NewRequest(http.MethodGet, target, nil)
+		rec := httptest.NewRecorder()
+		appRouter.ServeHTTP(rec, req)
+
+		if rec.Code != http.StatusBadGateway {
+			t.Errorf("GET %s status = %d, want %d", target, rec.Code, http.StatusBadGateway)
+			continue
+		}
+		validateResponse(t, contractRouter, req, rec)
+	}
 }

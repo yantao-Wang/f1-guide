@@ -16,6 +16,7 @@ import (
 	"github.com/yantao-Wang/f1-guide/internal/router"
 	"github.com/yantao-Wang/f1-guide/internal/service"
 	"github.com/yantao-Wang/f1-guide/pkg/db"
+	"github.com/yantao-Wang/f1-guide/pkg/f1api"
 	"github.com/yantao-Wang/f1-guide/pkg/logger"
 )
 
@@ -41,12 +42,20 @@ func main() {
 	repo := repository.New(pg)
 	svc := service.NewContent(repo, repo, repo)
 
+	statsClient, err := f1api.New(f1APIBaseURL())
+	if err != nil {
+		log.Error("init f1api client failed", "error", err)
+		os.Exit(1)
+	}
+	statsSvc := service.NewStats(statsClient)
+
 	srv := &http.Server{
 		Addr: cfg.HTTPAddr,
 		Handler: router.New(log,
 			handler.NewHealth(log),
 			handler.NewContent(svc),
-			handler.NewPages(svc)),
+			handler.NewStats(statsSvc),
+			handler.NewPages(svc, statsSvc)),
 		ReadTimeout:  readTimeout,
 		WriteTimeout: writeTimeout,
 		IdleTimeout:  idleTimeout,
@@ -71,4 +80,13 @@ func main() {
 	if err := srv.Shutdown(ctx); err != nil {
 		log.Error("shutdown failed", "error", err)
 	}
+}
+
+// f1APIBaseURL 上游赛事数据地址，可用环境变量 F1API_BASE_URL 覆盖
+// （默认 Jolpica 官方地址；国内网络下联调可指向本地代理）。
+func f1APIBaseURL() string {
+	if v := os.Getenv("F1API_BASE_URL"); v != "" {
+		return v
+	}
+	return f1api.DefaultBaseURL
 }
