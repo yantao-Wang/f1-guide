@@ -12,7 +12,7 @@ build: ## 编译全部包
 test: ## 运行全部测试
 	go test ./...
 
-cover: ## 测试 + 覆盖率报告（口径：internal + pkg，与 CI 一致）
+cover: ## 测试 + 覆盖率报告（本地快速口径；CI 为单元+集成合并口径，见 ci.yml）
 	go test -coverprofile=cover.out ./internal/... ./pkg/...
 	go tool cover -func=cover.out | tail -1
 
