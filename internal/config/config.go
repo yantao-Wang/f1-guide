@@ -5,8 +5,6 @@
 package config
 
 import (
-	"fmt"
-
 	"github.com/spf13/viper"
 )
 
@@ -36,7 +34,7 @@ func Load() Config {
 		DatabaseURL: v.GetString("database_url"),
 	}
 	if cfg.HTTPAddr == "" {
-		panic(fmt.Sprintf("invalid config: http_addr is empty"))
+		panic("invalid config: http_addr is empty")
 	}
 	return cfg
 }
