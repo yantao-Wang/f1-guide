@@ -33,6 +33,21 @@ export F1GUIDE_TEST_DATABASE_URL=postgres://f1guide:f1guide@localhost:5432/f1gui
 go test -tags=integration ./tests/integration/...
 ```
 
+### 网络与代理（国内网络）
+
+本机开发依赖三类境外下载，国内直连时快时慢，踩坑记录如下：
+
+| 依赖 | 问题 | 解法 |
+| --- | --- | --- |
+| Go 模块 | proxy.golang.org 超时 | 已持久配置 `GOPROXY=https://goproxy.cn,direct`（`go env -w`） |
+| Colima VM 镜像 | GitHub CDN 限速（实测 ~28KB/s） | 挂本机代理重启：`HTTPS_PROXY=http://127.0.0.1:7897 colima start`（断点续传，端口按本机代理实际配置） |
+| Docker Hub 镜像 | 目前直连可用 | 如变慢，给 colima 的 Docker daemon 配置镜像加速器 |
+
+### 故障排查
+
+- **8080 端口被占用**：`go run` 杀父进程会残留子二进制，用 `lsof -ti :8080 | xargs kill` 清理；本地冒烟建议 `go build -o /tmp/f1guide-api ./cmd/api && /tmp/f1guide-api` 直接管理进程
+- **集成测试提示跳过**：未设置 `F1GUIDE_TEST_DATABASE_URL`，按上文导出后再跑
+
 ## 质量门禁（CI 自动执行）
 
 | 检查 | 工具 | 标准 |
