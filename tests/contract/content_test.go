@@ -74,7 +74,7 @@ func newAppRouter() http.Handler {
 		MomentDetail: testutil.SampleMoment(),
 	}
 	svc := service.NewContent(store, store, store)
-	return router.New(log, handler.NewHealth(log), handler.NewContent(svc))
+	return router.New(log, handler.NewHealth(log), handler.NewContent(svc), handler.NewPages(svc))
 }
 
 // validateResponse 用 kin-openapi 校验实际响应符合契约。

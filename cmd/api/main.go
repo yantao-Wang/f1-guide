@@ -42,8 +42,11 @@ func main() {
 	svc := service.NewContent(repo, repo, repo)
 
 	srv := &http.Server{
-		Addr:         cfg.HTTPAddr,
-		Handler:      router.New(log, handler.NewHealth(log), handler.NewContent(svc)),
+		Addr: cfg.HTTPAddr,
+		Handler: router.New(log,
+			handler.NewHealth(log),
+			handler.NewContent(svc),
+			handler.NewPages(svc)),
 		ReadTimeout:  readTimeout,
 		WriteTimeout: writeTimeout,
 		IdleTimeout:  idleTimeout,

@@ -1,0 +1,37 @@
+{{define "track_detail"}}{{template "layout" .}}{{end}}
+
+{{define "content"}}
+{{$t := .Data.Track}}
+<article class="detail">
+  <header class="detail-hero">
+    <a class="back-link" href="/stories/tracks">← 全部赛道</a>
+    <h1>{{$t.Name}}</h1>
+    <p class="detail-tagline">{{$t.Tagline}}</p>
+    <div class="detail-meta">
+      <span class="badge {{if eq $t.Type "street"}}badge-red{{end}}">
+        {{if eq $t.Type "street"}}临时市街赛道{{else}}专用赛车跑道{{end}}
+      </span>
+      <span class="badge">{{$t.Country}}</span>
+      <span class="badge">首次办赛 {{$t.FirstGrandPrix}}</span>
+      <span class="badge">单圈 {{$t.LengthKm}} km</span>
+      <span class="badge">正赛 {{$t.Laps}} 圈</span>
+    </div>
+  </header>
+
+  <section class="detail-section">
+    <h2>观赛看点</h2>
+    <div class="chips">
+      {{range $t.Highlights}}<span class="chip">{{.}}</span>{{end}}
+    </div>
+  </section>
+
+  {{if $t.RelatedMoments}}
+  <section class="detail-section">
+    <h2>这里发生过的名场面</h2>
+    <div class="chips">
+      {{range $t.RelatedMoments}}<a class="chip chip-link" href="/stories/moments/{{.}}">{{.}}</a>{{end}}
+    </div>
+  </section>
+  {{end}}
+</article>
+{{end}}

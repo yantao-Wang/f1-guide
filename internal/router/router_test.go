@@ -16,7 +16,7 @@ func newTestRouter() http.Handler {
 	log := slog.New(slog.NewTextHandler(io.Discard, nil))
 	store := &testutil.FakeStore{}
 	svc := service.NewContent(store, store, store)
-	return New(log, handler.NewHealth(log), handler.NewContent(svc))
+	return New(log, handler.NewHealth(log), handler.NewContent(svc), handler.NewPages(svc))
 }
 
 func TestHealthRoute(t *testing.T) {

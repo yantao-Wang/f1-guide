@@ -1,0 +1,62 @@
+{{define "driver_detail"}}{{template "layout" .}}{{end}}
+
+{{define "content"}}
+{{$d := .Data.Driver}}
+<article class="detail" style="--team-color: {{$d.Team.Color}}">
+  <header class="detail-hero">
+    <a class="back-link" href="/stories/drivers">← 全部车手</a>
+    <h1>{{$d.Name}}</h1>
+    <p class="detail-tagline">{{$d.Tagline}}</p>
+    <div class="detail-meta">
+      <span class="badge badge-team">{{$d.Team.Name}}</span>
+      <span class="badge">车号 {{$d.Number}}</span>
+      <span class="badge">{{$d.Country}}</span>
+      {{if gt $d.Championships 0}}<span class="badge badge-red">{{$d.Championships}} 次世界冠军</span>{{end}}
+    </div>
+  </header>
+
+  <section class="detail-section">
+    <h2>核心故事</h2>
+    {{range paragraphs $d.Story}}
+    <p>{{.}}</p>
+    {{end}}
+  </section>
+
+  <section class="detail-section">
+    <h2>性格标签</h2>
+    <div class="chips">
+      {{range $d.Personality}}<span class="chip">{{.}}</span>{{end}}
+    </div>
+  </section>
+
+  {{if $d.Trivia}}
+  <section class="detail-section">
+    <h2>冷知识</h2>
+    <ul class="trivia-list">
+      {{range $d.Trivia}}<li>{{.}}</li>{{end}}
+    </ul>
+  </section>
+  {{end}}
+
+  <section class="detail-section">
+    <h2>名言金句</h2>
+    <blockquote class="quote">“{{$d.Quote}}”</blockquote>
+  </section>
+
+  {{if $d.FeaturedRace}}
+  <section class="detail-section">
+    <h2>推荐比赛</h2>
+    <p class="featured-race">🏁 {{$d.FeaturedRace.Year}} · {{$d.FeaturedRace.GrandPrix}}</p>
+  </section>
+  {{end}}
+
+  {{if $d.RelatedMoments}}
+  <section class="detail-section">
+    <h2>关联名场面</h2>
+    <div class="chips">
+      {{range $d.RelatedMoments}}<a class="chip chip-link" href="/stories/moments/{{.}}">{{.}}</a>{{end}}
+    </div>
+  </section>
+  {{end}}
+</article>
+{{end}}

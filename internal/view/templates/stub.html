@@ -1,0 +1,11 @@
+{{define "stub"}}{{template "layout" .}}{{end}}
+
+{{define "content"}}
+<section class="hero hero-stub">
+  <h1>{{.Data.Title}}</h1>
+  <p class="hero-sub">{{.Data.Hint}}</p>
+  <div class="hero-actions">
+    <a class="btn btn-primary" href="/">回到首页</a>
+  </div>
+</section>
+{{end}}

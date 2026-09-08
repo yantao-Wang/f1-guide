@@ -1,0 +1,19 @@
+{{define "tracks"}}{{template "layout" .}}{{end}}
+
+{{define "content"}}
+<h1 class="page-title">赛道图鉴</h1>
+<p class="page-lead">每条赛道，一个记忆锚点。看比赛前，先认识脚下的路。</p>
+
+<div class="grid">
+  {{range .Data.Tracks}}
+  <a class="card track-card" href="/stories/tracks/{{.Slug}}">
+    <h3>{{.Name}}</h3>
+    <p class="driver-team">{{.Country}}</p>
+    <p class="driver-tagline">{{.Tagline}}</p>
+    <span class="badge {{if eq .Type "street"}}badge-red{{end}}">
+      {{if eq .Type "street"}}临时市街赛道{{else}}专用赛车跑道{{end}}
+    </span>
+  </a>
+  {{end}}
+</div>
+{{end}}

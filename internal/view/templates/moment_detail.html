@@ -1,0 +1,50 @@
+{{define "moment_detail"}}{{template "layout" .}}{{end}}
+
+{{define "content"}}
+{{$m := .Data.Moment}}
+<article class="detail">
+  <header class="detail-hero">
+    <a class="back-link" href="/stories/moments">← 全部名场面</a>
+    <h1>{{$m.Title}}</h1>
+    <div class="detail-meta">
+      <span class="badge badge-red">{{$m.Year}}</span>
+      <span class="badge">{{$m.GrandPrix}}</span>
+      <span class="badge">{{.Data.TypeLabel}}</span>
+    </div>
+  </header>
+
+  <section class="detail-section">
+    <h2>背景速览</h2>
+    <p>{{$m.Background}}</p>
+  </section>
+
+  <section class="detail-section">
+    <h2>为什么经典</h2>
+    <p class="why-classic">{{$m.WhyClassic}}</p>
+  </section>
+
+  {{if $m.VideoURL}}
+  <section class="detail-section">
+    <a class="btn btn-primary" href="{{$m.VideoURL}}" target="_blank" rel="noopener">▶️ 观看视频（bilibili）</a>
+  </section>
+  {{end}}
+
+  {{if $m.RelatedDrivers}}
+  <section class="detail-section">
+    <h2>相关车手</h2>
+    <div class="chips">
+      {{range $m.RelatedDrivers}}<a class="chip chip-link" href="/stories/drivers/{{.}}">{{.}}</a>{{end}}
+    </div>
+  </section>
+  {{end}}
+
+  {{if $m.RelatedTrack}}
+  <section class="detail-section">
+    <h2>发生地</h2>
+    <div class="chips">
+      <a class="chip chip-link" href="/stories/tracks/{{$m.RelatedTrack}}">{{$m.RelatedTrack}}</a>
+    </div>
+  </section>
+  {{end}}
+</article>
+{{end}}

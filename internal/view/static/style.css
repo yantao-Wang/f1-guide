@@ -1,0 +1,334 @@
+/* ============================================
+   走近围场 · F1咨讯 —— 设计令牌（报告 §5.2）
+   ============================================ */
+:root {
+  --brand: #E10600;          /* 品牌红：主按钮、高亮、装饰条 */
+  --bg: #0A0A0A;             /* 页面背景 */
+  --card: #1A1A1A;           /* 卡片背景 */
+  --card-hover: #242424;     /* 卡片悬停 */
+  --text: #FFFFFF;           /* 主文字 */
+  --text-secondary: #B0B0B0; /* 次要文字 */
+  --text-muted: #6B6B6B;     /* 辅助文字 */
+  --border: #2E2E2E;
+  --radius: 10px;
+  --container: 1080px;
+}
+
+/* ---------- 基础 ---------- */
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Hiragino Sans GB",
+    "Microsoft YaHei", "Helvetica Neue", Arial, sans-serif;
+  line-height: 1.7;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+a { color: inherit; text-decoration: none; }
+
+.container {
+  width: 100%;
+  max-width: var(--container);
+  margin: 0 auto;
+  padding: 0 20px;
+  flex: 1;
+}
+
+/* ---------- 导航 ---------- */
+.nav {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  background: rgba(10, 10, 10, 0.92);
+  backdrop-filter: blur(8px);
+  border-bottom: 1px solid var(--border);
+}
+
+.nav-inner {
+  max-width: var(--container);
+  margin: 0 auto;
+  padding: 14px 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.nav-brand {
+  font-size: 1.15rem;
+  font-weight: 700;
+  white-space: nowrap;
+}
+.nav-brand:hover { color: var(--brand); }
+
+.nav-links { display: flex; align-items: center; gap: 4px; flex-wrap: wrap; }
+
+.nav-links a {
+  padding: 6px 12px;
+  border-radius: 6px;
+  color: var(--text-secondary);
+  font-size: 0.95rem;
+  white-space: nowrap;
+}
+.nav-links a:hover { color: var(--text); background: var(--card); }
+.nav-links a.active { color: var(--brand); font-weight: 600; }
+
+.nav-dropdown { position: relative; }
+.nav-dropdown-menu {
+  display: none;
+  position: absolute;
+  top: 100%;
+  left: 0;
+  min-width: 140px;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 6px;
+  flex-direction: column;
+}
+.nav-dropdown:hover .nav-dropdown-menu { display: flex; }
+
+/* ---------- Hero ---------- */
+.hero {
+  padding: 64px 0 40px;
+  text-align: center;
+  border-bottom: 1px solid var(--border);
+}
+
+.hero h1 {
+  font-size: clamp(1.8rem, 4vw, 2.8rem);
+  font-weight: 800;
+  letter-spacing: 0.02em;
+}
+.hero h1::after {
+  content: "";
+  display: block;
+  width: 72px;
+  height: 4px;
+  background: var(--brand);
+  margin: 18px auto 0;
+  border-radius: 2px;
+}
+
+.hero-sub {
+  color: var(--text-secondary);
+  margin-top: 18px;
+  font-size: 1.05rem;
+}
+
+.hero-actions {
+  margin-top: 28px;
+  display: flex;
+  gap: 14px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.hero-stats {
+  margin-top: 36px;
+  display: flex;
+  gap: 40px;
+  justify-content: center;
+  color: var(--text-muted);
+  flex-wrap: wrap;
+}
+.hero-stats strong { color: var(--text); font-size: 1.4rem; }
+
+.hero-stub { border-bottom: none; }
+
+/* ---------- 按钮 ---------- */
+.btn {
+  display: inline-block;
+  padding: 10px 22px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: var(--card);
+  color: var(--text);
+  font-size: 0.95rem;
+  transition: background 0.15s;
+}
+.btn:hover { background: var(--card-hover); }
+
+.btn-primary {
+  background: var(--brand);
+  border-color: var(--brand);
+  font-weight: 600;
+}
+.btn-primary:hover { background: #c20500; }
+
+/* ---------- 通用卡片与网格 ---------- */
+.card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 22px;
+  transition: background 0.15s, transform 0.15s;
+  display: block;
+}
+.card:hover { background: var(--card-hover); }
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 18px;
+  margin-top: 22px;
+}
+
+.section { margin: 44px 0; }
+.section-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+}
+.section-head h2 { font-size: 1.35rem; }
+.section-more { color: var(--brand); font-size: 0.9rem; }
+.section-more:hover { text-decoration: underline; }
+
+/* ---------- 首页入口卡片 ---------- */
+.entries {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 18px;
+  margin: 44px 0;
+}
+.entry-card { text-align: center; }
+.entry-emoji { font-size: 2.2rem; display: block; margin-bottom: 8px; }
+.entry-card h3 { font-size: 1.1rem; margin-bottom: 6px; }
+.entry-card p { color: var(--text-muted); font-size: 0.88rem; }
+
+/* ---------- 车手卡片 ---------- */
+.driver-card {
+  border-top: 3px solid var(--team-color, var(--border));
+}
+.driver-card h3 { font-size: 1.15rem; }
+.driver-team { color: var(--text-muted); font-size: 0.85rem; margin: 2px 0 8px; }
+.driver-tagline {
+  color: var(--text-secondary);
+  font-size: 0.92rem;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+/* ---------- 赛道 / 名场面卡片 ---------- */
+.track-card h3 { font-size: 1.1rem; margin-bottom: 4px; }
+.moment-card h3 { font-size: 1.05rem; margin-top: 10px; }
+.moment-head { display: flex; gap: 8px; }
+
+/* ---------- 徽章 / 标签 ---------- */
+.badge {
+  display: inline-block;
+  padding: 3px 10px;
+  border-radius: 999px;
+  background: var(--card-hover);
+  border: 1px solid var(--border);
+  color: var(--text-secondary);
+  font-size: 0.8rem;
+}
+.badge-team {
+  background: var(--team-color, var(--card-hover));
+  border-color: var(--team-color, var(--border));
+  color: #fff;
+  font-weight: 600;
+}
+.badge-red { background: rgba(225, 6, 0, 0.15); border-color: var(--brand); color: var(--brand); }
+
+.chips { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 12px; }
+.chip {
+  padding: 6px 14px;
+  border-radius: 999px;
+  background: var(--card);
+  border: 1px solid var(--border);
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+}
+.chip-link:hover { border-color: var(--brand); color: var(--brand); }
+
+/* ---------- 详情页 ---------- */
+.page-title { font-size: 1.8rem; margin-top: 40px; }
+.page-lead { color: var(--text-muted); margin-top: 8px; }
+
+.detail { margin: 28px 0 60px; }
+
+.detail-hero {
+  padding: 36px 0 28px;
+  border-bottom: 3px solid var(--team-color, var(--brand));
+}
+.detail-hero h1 { font-size: 2rem; }
+.detail-tagline { color: var(--text-secondary); font-size: 1.05rem; margin-top: 8px; }
+.detail-meta { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 16px; }
+
+.back-link { color: var(--text-muted); font-size: 0.9rem; display: inline-block; margin-bottom: 14px; }
+.back-link:hover { color: var(--brand); }
+
+.detail-section { margin-top: 32px; }
+.detail-section h2 {
+  font-size: 1.15rem;
+  margin-bottom: 10px;
+  padding-left: 12px;
+  border-left: 3px solid var(--brand);
+}
+.detail-section p { color: var(--text-secondary); }
+
+.quote {
+  border-left: 3px solid var(--brand);
+  padding: 12px 20px;
+  background: var(--card);
+  border-radius: 0 var(--radius) var(--radius) 0;
+  color: var(--text);
+  font-size: 1.05rem;
+}
+
+.why-classic { font-size: 1.05rem; color: var(--text) !important; }
+
+.featured-race { color: var(--text) !important; }
+
+.trivia-list { padding-left: 22px; color: var(--text-secondary); }
+.trivia-list li { margin-bottom: 8px; }
+
+/* ---------- 占位卡片 ---------- */
+.placeholder-card {
+  border-style: dashed;
+  color: var(--text-muted);
+  text-align: center;
+  padding: 36px 22px;
+}
+
+.quiz-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  flex-wrap: wrap;
+}
+.quiz-card h3 { margin-bottom: 6px; }
+.quiz-card p { color: var(--text-muted); font-size: 0.92rem; }
+
+/* ---------- 页脚 ---------- */
+.footer {
+  border-top: 1px solid var(--border);
+  margin-top: 60px;
+  padding: 28px 20px;
+  text-align: center;
+  color: var(--text-muted);
+  font-size: 0.88rem;
+}
+.footer a { color: var(--text-secondary); }
+.footer a:hover { color: var(--brand); }
+.footer-note { margin-top: 6px; font-size: 0.8rem; }
+
+/* ---------- 响应式 ---------- */
+@media (max-width: 720px) {
+  .nav-inner { flex-direction: column; align-items: flex-start; gap: 8px; }
+  .nav-links a { padding: 4px 8px; font-size: 0.88rem; }
+  .hero { padding: 40px 0 28px; }
+  .hero-stats { gap: 24px; }
+  .entries { grid-template-columns: 1fr 1fr; }
+  .grid { grid-template-columns: 1fr; }
+}

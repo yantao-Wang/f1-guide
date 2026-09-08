@@ -1,0 +1,41 @@
+{{define "layout"}}<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{{.Title}} · 走近围场 · F1咨讯</title>
+  <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+  <header class="nav">
+    <div class="nav-inner">
+      <a class="nav-brand" href="/">🏎️ 走近围场</a>
+      <nav class="nav-links">
+        <a href="/" class="{{if eq .Active "home"}}active{{end}}">首页</a>
+        <div class="nav-dropdown">
+          <a href="/stories/drivers" class="{{if eq .Active "stories"}}active{{end}}">围场人物志 ▾</a>
+          <div class="nav-dropdown-menu">
+            <a href="/stories/drivers">车手故事</a>
+            <a href="/stories/tracks">赛道图鉴</a>
+            <a href="/stories/moments">名场面</a>
+          </div>
+        </div>
+        <a href="/schedule" class="{{if eq .Active "schedule"}}active{{end}}">赛程</a>
+        <a href="/data" class="{{if eq .Active "data"}}active{{end}}">赛事数据</a>
+        <a href="/game" class="{{if eq .Active "game"}}active{{end}}">🎮 格子棋</a>
+        <a href="/about" class="{{if eq .Active "about"}}active{{end}}">关于</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="container">
+    {{block "content" .}}{{end}}
+  </main>
+
+  <footer class="footer">
+    <p>🏎️ 走近围场 · F1咨讯 —— 从零开始，看懂F1的精彩</p>
+    <p class="footer-note">非官方粉丝科普站，与 FOM、FIA 及各车队无关联 · <a href="/about">免责声明</a></p>
+  </footer>
+</body>
+</html>
+{{end}}

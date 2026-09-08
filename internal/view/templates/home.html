@@ -1,0 +1,76 @@
+{{define "home"}}{{template "layout" .}}{{end}}
+
+{{define "content"}}
+<section class="hero">
+  <h1>从零开始，看懂F1的精彩</h1>
+  <p class="hero-sub">车手故事 · 赛道图鉴 · 名场面 · 赛事数据 · 格子棋 —— 一站式 F1 观赛指南</p>
+  <div class="hero-actions">
+    <a class="btn btn-primary" href="/stories/drivers">开始认识车手</a>
+    <a class="btn" href="/game">🎮 去玩格子棋</a>
+  </div>
+  <div class="hero-stats">
+    <span><strong>{{.Data.DriverCount}}</strong> 位车手故事</span>
+    <span><strong>{{.Data.TrackCount}}</strong> 条赛道图鉴</span>
+    <span><strong>{{.Data.MomentCount}}</strong> 个名场面</span>
+  </div>
+</section>
+
+<section class="entries">
+  <a class="card entry-card" href="/stories/drivers">
+    <span class="entry-emoji">🏎️</span>
+    <h3>车手故事</h3>
+    <p>切片式叙事，认识每一位车手</p>
+  </a>
+  <a class="card entry-card" href="/stories/tracks">
+    <span class="entry-emoji">🗺️</span>
+    <h3>赛道图鉴</h3>
+    <p>每条赛道的观赛看点</p>
+  </a>
+  <a class="card entry-card" href="/stories/moments">
+    <span class="entry-emoji">🔥</span>
+    <h3>名场面</h3>
+    <p>F1 历史上最戏剧性的瞬间</p>
+  </a>
+  <a class="card entry-card" href="/game">
+    <span class="entry-emoji">🎮</span>
+    <h3>格子棋</h3>
+    <p>每站预测前十名，积分竞猜</p>
+  </a>
+</section>
+
+<section class="section">
+  <div class="section-head">
+    <h2>围场人物志精选</h2>
+    <a class="section-more" href="/stories/drivers">全部车手 →</a>
+  </div>
+  <div class="grid">
+    {{range .Data.Featured}}
+    <a class="card driver-card" href="/stories/drivers/{{.Slug}}" style="--team-color: {{.Team.Color}}">
+      <h3>{{.Name}}</h3>
+      <p class="driver-team">{{.Team.Name}}</p>
+      <p class="driver-tagline">{{.Tagline}}</p>
+    </a>
+    {{end}}
+  </div>
+</section>
+
+<section class="section">
+  <div class="section-head">
+    <h2>积分榜速览</h2>
+    <a class="section-more" href="/data">完整数据 →</a>
+  </div>
+  <div class="card placeholder-card">
+    <p>🏗️ 赛事数据接入中 —— 赛果与积分榜将随 Jolpica 数据管道点亮（预计 10 月下旬）</p>
+  </div>
+</section>
+
+<section class="section">
+  <div class="card quiz-card">
+    <div>
+      <h3>测测你是哪个F1车手</h3>
+      <p>5 道趣味选择题，找到和你最像的车手</p>
+    </div>
+    <a class="btn btn-primary" href="/quiz">开始测验</a>
+  </div>
+</section>
+{{end}}

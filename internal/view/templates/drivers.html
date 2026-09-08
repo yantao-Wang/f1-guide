@@ -1,0 +1,16 @@
+{{define "drivers"}}{{template "layout" .}}{{end}}
+
+{{define "content"}}
+<h1 class="page-title">车手故事</h1>
+<p class="page-lead">不讲黑话，不贴标签。从零开始，认识每一位车手。</p>
+
+<div class="grid">
+  {{range .Data.Drivers}}
+  <a class="card driver-card" href="/stories/drivers/{{.Slug}}" style="--team-color: {{.Team.Color}}">
+    <h3>{{.Name}}</h3>
+    <p class="driver-team">{{.Team.Name}}</p>
+    <p class="driver-tagline">{{.Tagline}}</p>
+  </a>
+  {{end}}
+</div>
+{{end}}

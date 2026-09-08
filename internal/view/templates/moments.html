@@ -1,0 +1,19 @@
+{{define "moments"}}{{template "layout" .}}{{end}}
+
+{{define "content"}}
+<h1 class="page-title">名场面</h1>
+<p class="page-lead">有些瞬间，看过就忘不掉。这就是 F1 让人上瘾的原因。</p>
+
+<div class="grid">
+  {{range .Data.Moments}}
+  <a class="card moment-card" href="/stories/moments/{{.Slug}}">
+    <div class="moment-head">
+      <span class="badge badge-red">{{.Year}}</span>
+      <span class="badge">{{.TypeLabel}}</span>
+    </div>
+    <h3>{{.Title}}</h3>
+    <p class="driver-team">{{.GrandPrix}}</p>
+  </a>
+  {{end}}
+</div>
+{{end}}
