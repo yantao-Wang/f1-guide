@@ -1,0 +1,18 @@
+# 构建产物
+bin/
+cover.out
+
+# 环境变量与敏感信息（.env.example 可提交）
+.env
+.env.local
+
+# 系统与编辑器
+.DS_Store
+.idea/
+.vscode/
+
+# Claude Code 本地设置（项目级 CLAUDE.md 如需入库再单独 force-add）
+.claude/
+
+# 日志
+*.log

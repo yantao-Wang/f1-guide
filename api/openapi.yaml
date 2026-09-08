@@ -1,0 +1,539 @@
+openapi: 3.0.3
+info:
+  title: F1 Guide API
+  version: 0.1.0
+  description: |
+    「走近围场 · F1咨讯」MVP 内容与赛事数据 API。
+
+    契约先行：所有实现必须与本文件一致，契约测试在 CI 中强制校验。
+    数据模型对应《研究报告》§7.6，内容模板对应 §3.2-3.4。
+  license:
+    name: MIT
+
+servers:
+  - url: /api/v1
+    description: API v1（挂载于站点根路径下）
+
+paths:
+  /health:
+    get:
+      operationId: health
+      summary: 健康检查
+      description: 部署后自动验证端点，返回 200 即存活。
+      responses:
+        "200":
+          description: 服务正常
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Health"
+  /drivers:
+    get:
+      operationId: listDrivers
+      summary: 车手故事列表
+      parameters:
+        - $ref: "#/components/parameters/Featured"
+      responses:
+        "200":
+          description: 车手列表
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DriverList"
+        "500":
+          $ref: "#/components/responses/InternalError"
+  /drivers/{slug}:
+    get:
+      operationId: getDriver
+      summary: 车手故事详情
+      parameters:
+        - $ref: "#/components/parameters/DriverSlug"
+      responses:
+        "200":
+          description: 车手详情
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Driver"
+        "404":
+          $ref: "#/components/responses/NotFound"
+  /tracks:
+    get:
+      operationId: listTracks
+      summary: 赛道图鉴列表
+      responses:
+        "200":
+          description: 赛道列表
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TrackList"
+        "500":
+          $ref: "#/components/responses/InternalError"
+  /tracks/{slug}:
+    get:
+      operationId: getTrack
+      summary: 赛道图鉴详情
+      parameters:
+        - $ref: "#/components/parameters/TrackSlug"
+      responses:
+        "200":
+          description: 赛道详情
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Track"
+        "404":
+          $ref: "#/components/responses/NotFound"
+  /moments:
+    get:
+      operationId: listMoments
+      summary: 名场面列表
+      responses:
+        "200":
+          description: 名场面列表
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MomentList"
+        "500":
+          $ref: "#/components/responses/InternalError"
+  /moments/{slug}:
+    get:
+      operationId: getMoment
+      summary: 名场面详情
+      parameters:
+        - $ref: "#/components/parameters/MomentSlug"
+      responses:
+        "200":
+          description: 名场面详情
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Moment"
+        "404":
+          $ref: "#/components/responses/NotFound"
+  /schedule:
+    get:
+      operationId: getSchedule
+      summary: 当季赛程
+      description: 返回当前赛季全部比赛及状态（已完赛含赛果摘要）。
+      parameters:
+        - $ref: "#/components/parameters/Season"
+      responses:
+        "200":
+          description: 赛程列表
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Schedule"
+        "500":
+          $ref: "#/components/responses/InternalError"
+  /standings/drivers:
+    get:
+      operationId: getDriverStandings
+      summary: 车手积分榜
+      parameters:
+        - $ref: "#/components/parameters/Season"
+      responses:
+        "200":
+          description: 车手积分榜
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DriverStandings"
+        "500":
+          $ref: "#/components/responses/InternalError"
+  /standings/constructors:
+    get:
+      operationId: getConstructorStandings
+      summary: 车队积分榜
+      parameters:
+        - $ref: "#/components/parameters/Season"
+      responses:
+        "200":
+          description: 车队积分榜
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ConstructorStandings"
+        "500":
+          $ref: "#/components/responses/InternalError"
+
+components:
+  parameters:
+    DriverSlug:
+      name: slug
+      in: path
+      required: true
+      description: 车手 slug，如 max-verstappen
+      schema:
+        type: string
+        example: max-verstappen
+    TrackSlug:
+      name: slug
+      in: path
+      required: true
+      description: 赛道 slug，如 shanghai
+      schema:
+        type: string
+        example: shanghai
+    MomentSlug:
+      name: slug
+      in: path
+      required: true
+      description: 名场面 slug，如 2021-abu-dhabi
+      schema:
+        type: string
+        example: 2021-abu-dhabi
+    Season:
+      name: season
+      in: query
+      required: false
+      description: 赛季年份，缺省为当前赛季
+      schema:
+        type: integer
+        example: 2026
+    Featured:
+      name: featured
+      in: query
+      required: false
+      description: 仅返回首页精选（围场人物志精选位）
+      schema:
+        type: boolean
+        example: true
+
+  responses:
+    NotFound:
+      description: 资源不存在
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
+    InternalError:
+      description: 服务器内部错误
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
+
+  schemas:
+    Health:
+      type: object
+      required: [status]
+      properties:
+        status:
+          type: string
+          enum: [ok]
+          example: ok
+
+    Error:
+      type: object
+      required: [code, message]
+      properties:
+        code:
+          type: string
+          description: 机器可读错误码，如 not_found
+          example: not_found
+        message:
+          type: string
+          description: 面向用户的错误说明
+          example: 该车手不存在
+
+    TeamRef:
+      type: object
+      required: [name, color]
+      properties:
+        name:
+          type: string
+          example: 法拉利
+        color:
+          type: string
+          description: 车队色（报告 §5.2 色值）
+          example: "#DC0000"
+
+    DriverSummary:
+      type: object
+      required: [slug, name, tagline]
+      properties:
+        slug:
+          type: string
+          example: zhou-guanyu
+        name:
+          type: string
+          example: 周冠宇
+        tagline:
+          type: string
+          description: 一句话人设（3 秒建立印象）
+          example: 让中国国旗第一次出现在 F1 积分区的人
+        team:
+          $ref: "#/components/schemas/TeamRef"
+        featured:
+          type: boolean
+          description: 是否首页精选
+
+    Driver:
+      allOf:
+        - $ref: "#/components/schemas/DriverSummary"
+        - type: object
+          required: [number, championships, country, story, personality, quote]
+          properties:
+            number:
+              type: integer
+              description: 车号
+              example: 24
+            championships:
+              type: integer
+              description: 世界冠军次数
+              example: 0
+            country:
+              type: string
+              example: 中国
+            story:
+              type: string
+              description: 核心故事（1-2 个切片，500-800 字，markdown）
+            personality:
+              type: array
+              description: 性格标签（3-5 个）
+              items:
+                type: string
+            trivia:
+              type: array
+              description: 冷知识/趣事（1-2 条）
+              items:
+                type: string
+            quote:
+              type: string
+              description: 名言金句
+            featuredRace:
+              type: object
+              description: 最能代表他的一场比赛
+              required: [year, grandPrix]
+              properties:
+                year:
+                  type: integer
+                  example: 2022
+                grandPrix:
+                  type: string
+                  example: 巴林大奖赛
+            relatedMoments:
+              type: array
+              description: 关联名场面 slug
+              items:
+                type: string
+
+    DriverList:
+      type: object
+      required: [items]
+      properties:
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/DriverSummary"
+
+    TrackSummary:
+      type: object
+      required: [slug, name, tagline, type]
+      properties:
+        slug:
+          type: string
+          example: shanghai
+        name:
+          type: string
+          example: 上海国际赛车场
+        country:
+          type: string
+          example: 中国
+        tagline:
+          type: string
+          description: 一句话印象
+        type:
+          type: string
+          enum: [permanent, street]
+          description: 专用赛道 / 临时市街赛道
+
+    Track:
+      allOf:
+        - $ref: "#/components/schemas/TrackSummary"
+        - type: object
+          required: [firstGrandPrix, lengthKm, laps, highlights]
+          properties:
+            firstGrandPrix:
+              type: integer
+              description: 首次办赛年份
+              example: 2004
+            lengthKm:
+              type: number
+              description: 单圈长度（公里）
+              example: 5.451
+            laps:
+              type: integer
+              description: 正赛圈数
+              example: 56
+            highlights:
+              type: array
+              description: 观赛看点（3-5 个关键词）
+              items:
+                type: string
+            circuitMapUrl:
+              type: string
+              description: 赛道地图（极简线条绘制，静态资源）
+            relatedMoments:
+              type: array
+              description: 关联名场面 slug
+              items:
+                type: string
+
+    TrackList:
+      type: object
+      required: [items]
+      properties:
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/TrackSummary"
+
+    MomentSummary:
+      type: object
+      required: [slug, title, year, type]
+      properties:
+        slug:
+          type: string
+          example: 2021-abu-dhabi
+        title:
+          type: string
+          example: 2021 阿布扎比 · 最后一圈决出世界冠军
+        year:
+          type: integer
+          example: 2021
+        grandPrix:
+          type: string
+          example: 阿布扎比大奖赛
+        type:
+          type: string
+          enum: [championship, overtake, safety, rain]
+          description: 冠军争夺 / 经典超车 / 事故安全 / 雨战传奇
+
+    Moment:
+      allOf:
+        - $ref: "#/components/schemas/MomentSummary"
+        - type: object
+          required: [background, whyClassic]
+          properties:
+            background:
+              type: string
+              description: 背景速览（50 字以内）
+            whyClassic:
+              type: string
+              description: 一句话点明"为什么经典"
+            videoUrl:
+              type: string
+              description: bilibili 第三方嵌入链接（不存储视频文件）
+            relatedDrivers:
+              type: array
+              items:
+                type: string
+            relatedTrack:
+              type: string
+              description: 关联赛道 slug
+
+    MomentList:
+      type: object
+      required: [items]
+      properties:
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/MomentSummary"
+
+    Race:
+      type: object
+      required: [round, date, grandPrix, circuit, country, status]
+      properties:
+        round:
+          type: integer
+          example: 23
+        date:
+          type: string
+          format: date
+          example: "2026-12-06"
+        grandPrix:
+          type: string
+          example: 阿布扎比大奖赛
+        circuit:
+          type: string
+          example: 亚斯码头赛道
+        country:
+          type: string
+          example: 阿联酋
+        status:
+          type: string
+          enum: [upcoming, completed, cancelled]
+        winner:
+          type: string
+          description: 冠军车手 slug（已完赛时返回）
+
+    Schedule:
+      type: object
+      required: [season, races]
+      properties:
+        season:
+          type: integer
+          example: 2026
+        races:
+          type: array
+          items:
+            $ref: "#/components/schemas/Race"
+
+    DriverStandingRow:
+      type: object
+      required: [position, driverSlug, driverName, points]
+      properties:
+        position:
+          type: integer
+          example: 1
+        driverSlug:
+          type: string
+        driverName:
+          type: string
+        team:
+          $ref: "#/components/schemas/TeamRef"
+        points:
+          type: integer
+        wins:
+          type: integer
+
+    ConstructorStandingRow:
+      type: object
+      required: [position, team, points]
+      properties:
+        position:
+          type: integer
+        team:
+          $ref: "#/components/schemas/TeamRef"
+        points:
+          type: integer
+        wins:
+          type: integer
+
+    DriverStandings:
+      type: object
+      required: [season, items]
+      properties:
+        season:
+          type: integer
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/DriverStandingRow"
+
+    ConstructorStandings:
+      type: object
+      required: [season, items]
+      properties:
+        season:
+          type: integer
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/ConstructorStandingRow"
