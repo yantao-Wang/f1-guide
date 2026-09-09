@@ -20,6 +20,8 @@ type DriverSummary struct {
 	Tagline  string `json:"tagline"`
 	Team     Team   `json:"team"`
 	Featured bool   `json:"featured"`
+	// ImageURL 车手照片路径，仅后台列表页使用，不进公开 JSON（契约不变）。
+	ImageURL string `json:"-"`
 }
 
 // Driver 车手故事详情（对应 OpenAPI Driver）。
@@ -39,4 +41,8 @@ type Driver struct {
 	FeaturedRace  *FeaturedRace `json:"featuredRace,omitempty"`
 	// RelatedMoments 关联名场面 slug。
 	RelatedMoments []string `json:"relatedMoments"`
+	// JolpicaID 上游 Jolpica driverId。后台录入专用，不进公开 API（契约不变）。
+	JolpicaID string `json:"-"`
+	// ImageURL 车手照片路径（/uploads 前缀），只服务 SSR 页面，不进公开 JSON。
+	ImageURL string `json:"-"`
 }

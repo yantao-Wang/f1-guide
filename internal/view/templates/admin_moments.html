@@ -1,0 +1,38 @@
+{{define "admin_moments"}}{{template "admin_layout" .}}{{end}}
+
+{{define "content"}}
+{{$moments := .Data.Body.Moments}}
+<div class="admin-head">
+  <h1 class="admin-title">名场面管理</h1>
+  <a class="btn btn-primary" href="/admin/moments/new">＋ 新增名场面</a>
+</div>
+
+<div class="table-card admin-table-card">
+  <table class="admin-table">
+    <thead>
+      <tr><th>名场面</th><th>年份</th><th>类型</th><th>操作</th></tr>
+    </thead>
+    <tbody>
+    {{range $moments}}
+      <tr>
+        <td>
+          <a class="admin-table-link" href="/stories/moments/{{.Slug}}" target="_blank" rel="noopener">{{.Title}} ↗</a>
+          <span class="admin-mono">{{.Slug}}</span>
+        </td>
+        <td>{{.Year}}</td>
+        <td><span class="badge">{{.TypeLabel}}</span></td>
+        <td class="admin-actions">
+          <a class="btn btn-small" href="/admin/moments/{{.Slug}}/edit">编辑</a>
+          <form method="post" action="/admin/moments/{{.Slug}}/delete" onsubmit="return confirm('确认删除「{{.Title}}」？此操作不可撤销')">
+            <input type="hidden" name="csrf" value="{{$.Data.CSRF}}">
+            <button type="submit" class="btn btn-small btn-danger">删除</button>
+          </form>
+        </td>
+      </tr>
+    {{else}}
+      <tr><td colspan="4" class="table-empty">暂无名场面，点右上角「新增名场面」开始</td></tr>
+    {{end}}
+    </tbody>
+  </table>
+</div>
+{{end}}

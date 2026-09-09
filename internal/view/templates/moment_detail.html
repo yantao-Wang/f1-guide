@@ -15,12 +15,16 @@
 
   <section class="detail-section">
     <h2>背景速览</h2>
-    <p>{{$m.Background}}</p>
+    {{range paragraphs $m.Background}}
+    <p>{{.}}</p>
+    {{end}}
   </section>
 
   <section class="detail-section">
     <h2>为什么经典</h2>
-    <p class="why-classic">{{$m.WhyClassic}}</p>
+    {{range paragraphs $m.WhyClassic}}
+    <p class="why-classic">{{.}}</p>
+    {{end}}
   </section>
 
   {{if $m.VideoURL}}

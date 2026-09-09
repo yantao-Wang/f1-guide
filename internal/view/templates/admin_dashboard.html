@@ -1,0 +1,68 @@
+{{define "admin_dashboard"}}{{template "admin_layout" .}}{{end}}
+
+{{define "content"}}
+{{$s := .Data.Body}}
+<h1 class="admin-title">仪表盘</h1>
+<p class="admin-subtitle">网站内容数据一览</p>
+
+<div class="stat-grid">
+  <a class="stat-card" href="/admin/drivers">
+    <strong>{{$s.DriverCount}}</strong>
+    <span>车手故事</span>
+  </a>
+  <a class="stat-card" href="/admin/tracks">
+    <strong>{{$s.TrackCount}}</strong>
+    <span>赛道图鉴</span>
+  </a>
+  <a class="stat-card" href="/admin/moments">
+    <strong>{{$s.MomentCount}}</strong>
+    <span>名场面</span>
+  </a>
+  <div class="stat-card">
+    <strong>{{$s.FeaturedCount}}</strong>
+    <span>首页精选</span>
+  </div>
+</div>
+
+<section class="admin-section">
+  <h2>最近更新</h2>
+  <div class="table-card admin-table-card">
+    <table class="admin-table">
+      <thead>
+        <tr><th>类型</th><th>内容</th><th>更新时间</th><th></th></tr>
+      </thead>
+      <tbody>
+      {{range $s.Recent}}
+        <tr>
+          <td><span class="issue-kind issue-kind-{{.Kind}}">{{.Kind}}</span></td>
+          <td><a class="admin-table-link" href="{{adminEditURL .Kind .Slug}}">{{.Name}}</a></td>
+          <td class="admin-muted">{{.UpdatedAt}}</td>
+          <td><a class="admin-table-link admin-view" href="{{adminFrontURL .Kind .Slug}}" target="_blank" rel="noopener">前台 ↗</a></td>
+        </tr>
+      {{else}}
+        <tr><td colspan="4" class="table-empty">暂无内容，去「车手」页新增第一篇吧</td></tr>
+      {{end}}
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<section class="admin-section">
+  <h2>内容完整性检查</h2>
+  {{if $s.Issues}}
+  <ul class="issue-list">
+    {{range $s.Issues}}
+    <li class="issue-item">
+      <span class="issue-severity {{if eq .Severity "缺失"}}issue-missing{{else}}issue-suggest{{end}}">
+        {{if eq .Severity "缺失"}}⚠{{else}}💡{{end}} {{.Severity}}
+      </span>
+      <a class="admin-table-link" href="{{adminEditURL .Kind .Slug}}">{{.Name}}</a>
+      <span class="issue-desc">{{.Issue}}</span>
+    </li>
+    {{end}}
+  </ul>
+  {{else}}
+  <p class="admin-empty">🎉 全部内容完整，没有发现任何问题</p>
+  {{end}}
+</section>
+{{end}}

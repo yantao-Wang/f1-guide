@@ -1,0 +1,80 @@
+{{define "admin_track_form"}}{{template "admin_layout" .}}{{end}}
+
+{{define "content"}}
+{{$f := .Data.Body.Form}}
+{{$isEdit := .Data.Body.IsEdit}}
+<div class="admin-head">
+  <h1 class="admin-title">{{if $isEdit}}编辑赛道{{else}}新增赛道{{end}}</h1>
+  <a class="btn" href="/admin/tracks">← 返回列表</a>
+</div>
+
+<form class="form" method="post" enctype="multipart/form-data" action="{{if $isEdit}}/admin/tracks/{{.Data.Body.OldSlug}}/edit{{else}}/admin/tracks/new{{end}}">
+  <input type="hidden" name="csrf" value="{{.Data.CSRF}}">
+
+  <div class="form-grid">
+    <div class="form-field">
+      <label for="slug">slug *</label>
+      <input type="text" id="slug" name="slug" value="{{$f.Slug}}" required>
+      <p class="form-hint">URL 标识：小写字母数字与连字符，如 shanghai。修改会使旧链接失效。</p>
+      {{with index $f.Errors "slug"}}<p class="form-error">{{.}}</p>{{end}}
+    </div>
+    <div class="form-field">
+      <label for="name">赛道名 *</label>
+      <input type="text" id="name" name="name" value="{{$f.Name}}" required>
+      {{with index $f.Errors "name"}}<p class="form-error">{{.}}</p>{{end}}
+    </div>
+    <div class="form-field">
+      <label for="country">国家 *</label>
+      <input type="text" id="country" name="country" value="{{$f.Country}}" required>
+      {{with index $f.Errors "country"}}<p class="form-error">{{.}}</p>{{end}}
+    </div>
+    <div class="form-field">
+      <label for="type">赛道类型 *</label>
+      <select id="type" name="type" required>
+        <option value="permanent" {{if eq $f.Type "permanent"}}selected{{end}}>永久赛道</option>
+        <option value="street" {{if eq $f.Type "street"}}selected{{end}}>街道赛道</option>
+      </select>
+      {{with index $f.Errors "type"}}<p class="form-error">{{.}}</p>{{end}}
+    </div>
+    <div class="form-field">
+      <label for="first_grand_prix">首次办赛年份 *</label>
+      <input type="number" id="first_grand_prix" name="first_grand_prix" value="{{$f.FirstGrandPrix}}" min="1950" max="2030" required>
+      {{with index $f.Errors "first_grand_prix"}}<p class="form-error">{{.}}</p>{{end}}
+    </div>
+    <div class="form-field">
+      <label for="length_km">赛道长度（km）*</label>
+      <input type="number" id="length_km" name="length_km" value="{{$f.LengthKm}}" step="0.001" min="0" max="30" required>
+      {{with index $f.Errors "length_km"}}<p class="form-error">{{.}}</p>{{end}}
+    </div>
+    <div class="form-field">
+      <label for="laps">正赛圈数 *</label>
+      <input type="number" id="laps" name="laps" value="{{$f.Laps}}" min="1" max="120" required>
+      {{with index $f.Errors "laps"}}<p class="form-error">{{.}}</p>{{end}}
+    </div>
+    <div class="form-field">
+      <label for="tagline">一句话介绍 *</label>
+      <input type="text" id="tagline" name="tagline" value="{{$f.Tagline}}" required>
+      {{with index $f.Errors "tagline"}}<p class="form-error">{{.}}</p>{{end}}
+    </div>
+    <div class="form-field form-field-wide">
+      <label for="highlights">赛道亮点</label>
+      <textarea id="highlights" name="highlights" rows="4" placeholder="每行一条">{{$f.HighlightsText}}</textarea>
+    </div>
+    <div class="form-field form-field-wide">
+      <label for="image">赛道图</label>
+      {{if .Data.Body.CurrentImage}}
+      <img class="form-image" src="{{.Data.Body.CurrentImage}}" alt="当前赛道图">
+      <label class="form-check"><input type="checkbox" name="remove_image"> 清除现有赛道图</label>
+      {{end}}
+      <input type="file" id="image" name="image" accept="image/jpeg,image/png,image/webp">
+      <p class="form-hint">支持 jpg / png / webp，不超过 8MB。</p>
+      {{with index $f.Errors "image"}}<p class="form-error">{{.}}</p>{{end}}
+    </div>
+  </div>
+
+  <div class="form-actions">
+    <button type="submit" class="btn btn-primary">{{if $isEdit}}保存修改{{else}}创建赛道{{end}}</button>
+    <a class="btn" href="/admin/tracks">取消</a>
+  </div>
+</form>
+{{end}}

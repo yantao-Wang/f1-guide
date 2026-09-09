@@ -20,6 +20,9 @@ type FakeStore struct {
 	Moments      []domain.MomentSummary
 	MomentDetail *domain.Moment
 
+	// Mappings 是 ListDriverMappings 的回吐数据（stats 映射测试用）。
+	Mappings []domain.DriverMapping
+
 	// Err 非空时所有方法直接返回该错误。
 	Err error
 }
@@ -145,4 +148,12 @@ func (f *FakeStore) GetMoment(_ context.Context, slug string) (*domain.Moment, e
 		return f.MomentDetail, nil
 	}
 	return nil, repository.ErrNotFound
+}
+
+// ListDriverMappings 返回 Jolpica driverId 映射（stats 服务消费）。
+func (f *FakeStore) ListDriverMappings(_ context.Context) ([]domain.DriverMapping, error) {
+	if f.Err != nil {
+		return nil, f.Err
+	}
+	return f.Mappings, nil
 }

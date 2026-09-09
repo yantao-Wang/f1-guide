@@ -1,0 +1,39 @@
+{{define "admin_drivers"}}{{template "admin_layout" .}}{{end}}
+
+{{define "content"}}
+{{$drivers := .Data.Body.Drivers}}
+<div class="admin-head">
+  <h1 class="admin-title">车手管理</h1>
+  <a class="btn btn-primary" href="/admin/drivers/new">＋ 新增车手</a>
+</div>
+
+<div class="table-card admin-table-card">
+  <table class="admin-table">
+    <thead>
+      <tr><th>车手</th><th>车队</th><th>精选</th><th>照片</th><th>操作</th></tr>
+    </thead>
+    <tbody>
+    {{range $drivers}}
+      <tr>
+        <td>
+          <a class="admin-table-link" href="/stories/drivers/{{.Slug}}" target="_blank" rel="noopener">{{.Name}} ↗</a>
+          <span class="admin-mono">{{.Slug}}</span>
+        </td>
+        <td>{{.Team.Name}}</td>
+        <td>{{if .Featured}}<span class="badge badge-red">精选</span>{{end}}</td>
+        <td>{{if .ImageURL}}<span class="badge">有</span>{{else}}<span class="admin-muted">无</span>{{end}}</td>
+        <td class="admin-actions">
+          <a class="btn btn-small" href="/admin/drivers/{{.Slug}}/edit">编辑</a>
+          <form method="post" action="/admin/drivers/{{.Slug}}/delete" onsubmit="return confirm('确认删除「{{.Name}}」？此操作不可撤销')">
+            <input type="hidden" name="csrf" value="{{$.Data.CSRF}}">
+            <button type="submit" class="btn btn-small btn-danger">删除</button>
+          </form>
+        </td>
+      </tr>
+    {{else}}
+      <tr><td colspan="5" class="table-empty">暂无车手，点右上角「新增车手」开始</td></tr>
+    {{end}}
+    </tbody>
+  </table>
+</div>
+{{end}}

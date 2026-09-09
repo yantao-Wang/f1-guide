@@ -1,0 +1,17 @@
+{{define "admin_login"}}{{template "admin_layout" .}}{{end}}
+
+{{define "content"}}
+<div class="form form-narrow">
+  <h1 class="admin-title">后台登录</h1>
+  <form method="post" action="/admin/login">
+    <input type="hidden" name="csrf" value="{{.Data.CSRF}}">
+    <div class="form-field">
+      <label for="password">管理密码</label>
+      <input type="password" id="password" name="password" required autofocus>
+    </div>
+    <div class="form-actions">
+      <button type="submit" class="btn btn-primary">登录</button>
+    </div>
+  </form>
+</div>
+{{end}}

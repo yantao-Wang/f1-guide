@@ -3,15 +3,22 @@
 {{define "content"}}
 {{$d := .Data.Driver}}
 <article class="detail" style="--team-color: {{$d.Team.Color}}">
-  <header class="detail-hero">
-    <a class="back-link" href="/stories/drivers">← 全部车手</a>
-    <h1>{{$d.Name}}</h1>
-    <p class="detail-tagline">{{$d.Tagline}}</p>
-    <div class="detail-meta">
-      <span class="badge badge-team">{{$d.Team.Name}}</span>
-      <span class="badge">车号 {{$d.Number}}</span>
-      <span class="badge">{{$d.Country}}</span>
-      {{if gt $d.Championships 0}}<span class="badge badge-red">{{$d.Championships}} 次世界冠军</span>{{end}}
+  <a class="back-link" href="/stories/drivers">← 全部车手</a>
+  <header class="driver-hero">
+    {{if $d.ImageURL}}
+    <img class="driver-hero-photo" src="{{$d.ImageURL}}" alt="{{$d.Name}} 照片">
+    {{else}}
+    <div class="driver-hero-photo driver-hero-photo-fallback">🏎️</div>
+    {{end}}
+    <div class="driver-hero-body">
+      <span class="driver-hero-number">#{{$d.Number}}</span>
+      <h1>{{$d.Name}}</h1>
+      <p class="detail-tagline">{{$d.Tagline}}</p>
+      <div class="detail-meta">
+        <span class="badge badge-team">{{$d.Team.Name}}</span>
+        <span class="badge">{{$d.Country}}</span>
+        {{if gt $d.Championships 0}}<span class="badge badge-red">{{$d.Championships}} 次世界冠军</span>{{end}}
+      </div>
     </div>
   </header>
 

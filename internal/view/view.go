@@ -44,8 +44,47 @@ func paragraphs(s string) []string {
 	return out
 }
 
+// adminEditURL 根据内容类型与 slug 生成后台编辑链接（仪表盘用）。
+func adminEditURL(kind, slug string) string {
+	switch kind {
+	case "driver":
+		return "/admin/drivers/" + slug + "/edit"
+	case "track":
+		return "/admin/tracks/" + slug + "/edit"
+	case "moment":
+		return "/admin/moments/" + slug + "/edit"
+	}
+	return ""
+}
+
+// adminFrontURL 根据内容类型与 slug 生成前台详情链接（仪表盘用）。
+func adminFrontURL(kind, slug string) string {
+	switch kind {
+	case "driver":
+		return "/stories/drivers/" + slug
+	case "track":
+		return "/stories/tracks/" + slug
+	case "moment":
+		return "/stories/moments/" + slug
+	}
+	return ""
+}
+
+// containsString 判断字符串切片是否包含指定元素（表单多选回填用）。
+func containsString(items []string, target string) bool {
+	for _, s := range items {
+		if s == target {
+			return true
+		}
+	}
+	return false
+}
+
 var funcs = template.FuncMap{
-	"paragraphs": paragraphs,
+	"paragraphs":    paragraphs,
+	"adminEditURL":  adminEditURL,
+	"adminFrontURL": adminFrontURL,
+	"contains":      containsString,
 }
 
 // pageNames 是全部页面模板名（与 templates/*.html 文件名对应）。
@@ -62,14 +101,38 @@ var pageNames = []string{
 	"about",
 	"stub",
 	"error_404",
+	"admin_login",
+	"admin_dashboard",
+	"admin_drivers",
+	"admin_driver_form",
+	"admin_tracks",
+	"admin_track_form",
+	"admin_moments",
+	"admin_moment_form",
 }
 
-// pageSets 为每个页面构建独立模板集：layout + 该页文件。
+// adminLayoutPages 使用后台骨架（admin_layout.html）的页面，其余用前台 layout.html。
+var adminLayoutPages = map[string]bool{
+	"admin_login":       true,
+	"admin_dashboard":   true,
+	"admin_drivers":     true,
+	"admin_driver_form": true,
+	"admin_tracks":      true,
+	"admin_track_form":  true,
+	"admin_moments":     true,
+	"admin_moment_form": true,
+}
+
+// pageSets 为每个页面构建独立模板集：骨架（前台/后台）+ 该页文件。
 var pageSets = func() map[string]*template.Template {
 	sets := make(map[string]*template.Template, len(pageNames))
 	for _, name := range pageNames {
+		layout := "templates/layout.html"
+		if adminLayoutPages[name] {
+			layout = "templates/admin_layout.html"
+		}
 		t := template.New(name).Funcs(funcs)
-		t = template.Must(t.ParseFS(templatesFS, "templates/layout.html", "templates/"+name+".html"))
+		t = template.Must(t.ParseFS(templatesFS, layout, "templates/"+name+".html"))
 		sets[name] = t
 	}
 	return sets

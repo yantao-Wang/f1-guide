@@ -16,3 +16,6 @@ cover.out
 
 # 日志
 *.log
+
+# 后台上传文件（运行时产物，Docker 部署挂卷持久化）
+/uploads/

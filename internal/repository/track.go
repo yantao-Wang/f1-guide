@@ -11,7 +11,7 @@ import (
 // ListTracks 返回赛道列表，入库顺序（内容首发优先级）。
 func (p *Postgres) ListTracks(ctx context.Context) ([]domain.TrackSummary, error) {
 	rows, err := p.db.QueryxContext(ctx, `
-		SELECT slug, name, country, tagline, type
+		SELECT slug, name, country, tagline, type, circuit_map_url
 		FROM tracks
 		ORDER BY id`)
 	if err != nil {
@@ -22,22 +22,27 @@ func (p *Postgres) ListTracks(ctx context.Context) ([]domain.TrackSummary, error
 	items := make([]domain.TrackSummary, 0)
 	for rows.Next() {
 		var r struct {
-			Slug    string `db:"slug"`
-			Name    string `db:"name"`
-			Country string `db:"country"`
-			Tagline string `db:"tagline"`
-			Type    string `db:"type"`
+			Slug          string  `db:"slug"`
+			Name          string  `db:"name"`
+			Country       string  `db:"country"`
+			Tagline       string  `db:"tagline"`
+			Type          string  `db:"type"`
+			CircuitMapURL *string `db:"circuit_map_url"`
 		}
 		if err := rows.StructScan(&r); err != nil {
 			return nil, err
 		}
-		items = append(items, domain.TrackSummary{
+		item := domain.TrackSummary{
 			Slug:    r.Slug,
 			Name:    r.Name,
 			Country: r.Country,
 			Tagline: r.Tagline,
 			Type:    r.Type,
-		})
+		}
+		if r.CircuitMapURL != nil {
+			item.CircuitMapURL = *r.CircuitMapURL
+		}
+		items = append(items, item)
 	}
 	return items, rows.Err()
 }

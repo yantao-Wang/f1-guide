@@ -1,0 +1,38 @@
+{{define "admin_layout"}}<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{{.Title}} · 管理后台 · 走近围场</title>
+  <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+  <header class="admin-nav">
+    <div class="admin-nav-inner">
+      <a class="admin-brand" href="/admin">🏎️ 走近围场 · 管理后台</a>
+      <nav class="admin-links">
+        <a href="/admin" class="{{if eq .Title "仪表盘"}}active{{end}}">仪表盘</a>
+        <a href="/admin/drivers" class="{{if or (eq .Title "车手管理") (eq .Title "新增车手") (eq .Title "编辑车手")}}active{{end}}">车手</a>
+        <a href="/admin/tracks" class="{{if or (eq .Title "赛道管理") (eq .Title "新增赛道") (eq .Title "编辑赛道")}}active{{end}}">赛道</a>
+        <a href="/admin/moments" class="{{if or (eq .Title "名场面管理") (eq .Title "新增名场面") (eq .Title "编辑名场面")}}active{{end}}">名场面</a>
+        <a href="/" target="_blank" rel="noopener">查看前台 ↗</a>
+        <form method="post" action="/admin/logout" class="admin-logout">
+          <input type="hidden" name="csrf" value="{{.Data.CSRF}}">
+          <button type="submit" class="admin-logout-btn">退出登录</button>
+        </form>
+      </nav>
+    </div>
+  </header>
+
+  <main class="container admin-main">
+    {{if .Data.Flash}}<div class="alert alert-success">✓ {{.Data.Flash}}</div>{{end}}
+    {{if .Data.Error}}<div class="alert alert-error">✗ {{.Data.Error}}</div>{{end}}
+    {{block "content" .}}{{end}}
+  </main>
+
+  <footer class="footer">
+    <p>🏎️ 走近围场 · 管理后台 —— 内容在线编辑发布</p>
+  </footer>
+</body>
+</html>
+{{end}}

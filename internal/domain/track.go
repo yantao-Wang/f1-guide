@@ -13,6 +13,8 @@ type TrackSummary struct {
 	Country string `json:"country"`
 	Tagline string `json:"tagline"`
 	Type    string `json:"type"`
+	// CircuitMapURL 赛道图路径，仅后台列表页使用，不进公开 JSON（契约不变）。
+	CircuitMapURL string `json:"-"`
 }
 
 // Track 赛道图鉴详情（对应 OpenAPI Track）。

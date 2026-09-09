@@ -1,10 +1,10 @@
--- 本地开发示例数据（占位内容，仅用于联调，不代表正式内容）
--- 正式内容由内容生产流水线（标杆稿 → Agent 起草 → 事实校验 → 终审）产出
+-- 本地开发示例数据（占位内容，仅用于本地联调，不代表正式内容）
+-- 正式内容统一经管理后台（/admin）在线录入发布，不再走 SQL 流水线
 -- 用法：make seed（幂等，可重复执行）
 
-INSERT INTO drivers (slug, name, tagline, team_name, team_color, number, championships, country, story, personality, trivia, quote, featured, featured_race_year, featured_race_gp)
-VALUES ('zhou-guanyu', '周冠宇', '让中国国旗第一次出现在 F1 积分区的人', '凯迪拉克', '#00A1E0', 24, 0, '中国', '【占位】示例故事正文', '{沉稳,坚韧}', '{【占位】示例冷知识}', '【占位】示例金句', TRUE, 2022, '巴林大奖赛'),
-       ('max-verstappen', '马克斯·维斯塔潘', '【占位】示例人设', '红牛', '#1E41FF', 1, 4, '荷兰', '【占位】示例故事正文', '{果断,激进}', '{}', '【占位】示例金句', TRUE, NULL, NULL)
+INSERT INTO drivers (slug, name, tagline, team_name, team_color, number, championships, country, story, personality, trivia, quote, featured, featured_race_year, featured_race_gp, jolpica_id)
+VALUES ('zhou-guanyu', '周冠宇', '让中国国旗第一次出现在 F1 积分区的人', '凯迪拉克', '#00A1E0', 24, 0, '中国', '【占位】示例故事正文', '{沉稳,坚韧}', '{【占位】示例冷知识}', '【占位】示例金句', TRUE, 2022, '巴林大奖赛', 'zhou'),
+       ('max-verstappen', '马克斯·维斯塔潘', '【占位】示例人设', '红牛', '#1E41FF', 1, 4, '荷兰', '【占位】示例故事正文', '{果断,激进}', '{}', '【占位】示例金句', TRUE, NULL, NULL, 'max_verstappen')
 ON CONFLICT (slug) DO NOTHING;
 
 INSERT INTO tracks (slug, name, country, tagline, type, first_grand_prix, length_km, laps, highlights, circuit_map_url)

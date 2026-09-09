@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/yantao-Wang/f1-guide/internal/domain"
+	"github.com/yantao-Wang/f1-guide/internal/testutil"
 	"github.com/yantao-Wang/f1-guide/pkg/f1api"
 )
 
@@ -50,7 +51,7 @@ func fixedClock() func() time.Time {
 }
 
 func newTestStats(client StatsClient) *Stats {
-	return NewStats(client).withNow(fixedClock())
+	return NewStats(client, nil).withNow(fixedClock())
 }
 
 func sampleClient() *countingClient {
@@ -221,7 +222,7 @@ func TestStatsCache(t *testing.T) {
 func TestStatsCacheExpiry(t *testing.T) {
 	client := sampleClient()
 	now := time.Date(2026, 9, 8, 12, 0, 0, 0, time.UTC)
-	stats := NewStats(client).withNow(func() time.Time {
+	stats := NewStats(client, nil).withNow(func() time.Time {
 		now = now.Add(time.Hour) // 每次调用推进 1 小时
 		return now
 	})
@@ -266,5 +267,65 @@ func TestStatsBadNumericData(t *testing.T) {
 
 	if _, err := stats.DriverStandings(context.Background(), 0); !errors.Is(err, ErrUnavailable) {
 		t.Errorf("err = %v, want ErrUnavailable（坏数据视为上游异常）", err)
+	}
+}
+
+// --- 数据库映射优先（W8 后台化） ---
+
+func TestDriverMappingsDBPriority(t *testing.T) {
+	maps := map[string]domain.DriverMapping{
+		"max_verstappen": {JolpicaID: "max_verstappen", Slug: "custom-max-slug", Name: "麦克斯"},
+	}
+
+	// DB 映射优先
+	if got := driverSlugWith(maps, "max_verstappen"); got != "custom-max-slug" {
+		t.Errorf("driverSlugWith = %q, want custom-max-slug", got)
+	}
+	if got := driverNameZhWith(maps, "max_verstappen", "Max", "Verstappen"); got != "麦克斯" {
+		t.Errorf("driverNameZhWith = %q, want 麦克斯", got)
+	}
+
+	// DB 缺失走代码表兜底
+	if got := driverSlugWith(maps, "zhou"); got != "zhou-guanyu" {
+		t.Errorf("driverSlugWith(zhou) = %q, want zhou-guanyu", got)
+	}
+	if got := driverNameZhWith(maps, "zhou", "Guanyu", "Zhou"); got != "周冠宇" {
+		t.Errorf("driverNameZhWith(zhou) = %q, want 周冠宇", got)
+	}
+
+	// 全缺失走归一化 / 上游原文
+	if got := driverSlugWith(nil, "new_driver"); got != "new-driver" {
+		t.Errorf("driverSlugWith 归一化 = %q, want new-driver", got)
+	}
+	if got := driverNameZhWith(nil, "new_driver", "Nemo", "New"); got != "Nemo New" {
+		t.Errorf("driverNameZhWith 原文 = %q, want Nemo New", got)
+	}
+}
+
+func TestLoadMappingsErrorFallback(t *testing.T) {
+	// 映射源故障：返回 nil 兜底，积分榜正常返回
+	store := &testutil.FakeStore{Err: errors.New("db down")}
+	stats := NewStats(&testutil.FakeStatsClient{}, store).withNow(fixedClock())
+
+	if maps := stats.loadMappings(context.Background()); maps != nil {
+		t.Fatalf("loadMappings = %v, want nil（故障兜底）", maps)
+	}
+
+	// 全链路：映射故障不影响积分榜构建
+	sched, err := stats.Schedule(context.Background(), 2026)
+	if err != nil || len(sched.Races) == 0 {
+		t.Fatalf("Schedule = %v, %v（映射故障不应阻塞）", sched, err)
+	}
+}
+
+func TestLoadMappingsFromStore(t *testing.T) {
+	store := &testutil.FakeStore{Mappings: []domain.DriverMapping{
+		{JolpicaID: "max_verstappen", Slug: "max-verstappen", Name: "维斯塔潘"},
+	}}
+	stats := NewStats(&testutil.FakeStatsClient{}, store).withNow(fixedClock())
+
+	maps := stats.loadMappings(context.Background())
+	if len(maps) != 1 || maps["max_verstappen"].Name != "维斯塔潘" {
+		t.Fatalf("maps = %+v", maps)
 	}
 }

@@ -1,0 +1,39 @@
+{{define "admin_tracks"}}{{template "admin_layout" .}}{{end}}
+
+{{define "content"}}
+{{$tracks := .Data.Body.Tracks}}
+<div class="admin-head">
+  <h1 class="admin-title">赛道管理</h1>
+  <a class="btn btn-primary" href="/admin/tracks/new">＋ 新增赛道</a>
+</div>
+
+<div class="table-card admin-table-card">
+  <table class="admin-table">
+    <thead>
+      <tr><th>赛道</th><th>国家</th><th>类型</th><th>赛道图</th><th>操作</th></tr>
+    </thead>
+    <tbody>
+    {{range $tracks}}
+      <tr>
+        <td>
+          <a class="admin-table-link" href="/stories/tracks/{{.Slug}}" target="_blank" rel="noopener">{{.Name}} ↗</a>
+          <span class="admin-mono">{{.Slug}}</span>
+        </td>
+        <td>{{.Country}}</td>
+        <td>{{if eq .Type "permanent"}}永久赛道{{else}}街道赛道{{end}}</td>
+        <td>{{if .CircuitMapURL}}<span class="badge">有</span>{{else}}<span class="admin-muted">无</span>{{end}}</td>
+        <td class="admin-actions">
+          <a class="btn btn-small" href="/admin/tracks/{{.Slug}}/edit">编辑</a>
+          <form method="post" action="/admin/tracks/{{.Slug}}/delete" onsubmit="return confirm('确认删除「{{.Name}}」？关联名场面会自动解绑')">
+            <input type="hidden" name="csrf" value="{{$.Data.CSRF}}">
+            <button type="submit" class="btn btn-small btn-danger">删除</button>
+          </form>
+        </td>
+      </tr>
+    {{else}}
+      <tr><td colspan="5" class="table-empty">暂无赛道，点右上角「新增赛道」开始</td></tr>
+    {{end}}
+    </tbody>
+  </table>
+</div>
+{{end}}

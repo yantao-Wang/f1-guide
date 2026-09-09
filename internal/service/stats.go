@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"log/slog"
 	"sort"
 	"strconv"
 	"strings"
@@ -31,9 +32,16 @@ type StatsClient interface {
 	ConstructorStandings(ctx context.Context, season int) ([]f1api.ConstructorStanding, error)
 }
 
+// DriverMappingStore 站内车手映射数据源（消费方定义，repository.Postgres 实现）。
+// 后台录入新车手时填写 Jolpica ID，积分榜/赛程即可动态挂接站内故事链接。
+type DriverMappingStore interface {
+	ListDriverMappings(ctx context.Context) ([]domain.DriverMapping, error)
+}
+
 // Stats 赛事数据服务：上游原始数据 → 领域模型，附带本地 TTL 缓存。
 type Stats struct {
 	client StatsClient
+	maps   DriverMappingStore // 可为 nil：仅代码表兜底
 	now    func() time.Time
 	mu     sync.Mutex
 	cache  map[string]cacheEntry
@@ -44,9 +52,9 @@ type cacheEntry struct {
 	expires time.Time
 }
 
-// NewStats 组装赛事数据服务。
-func NewStats(client StatsClient) *Stats {
-	return &Stats{client: client, now: time.Now, cache: make(map[string]cacheEntry)}
+// NewStats 组装赛事数据服务。maps 为站内车手映射源（nil 时仅用代码表兜底）。
+func NewStats(client StatsClient, maps DriverMappingStore) *Stats {
+	return &Stats{client: client, maps: maps, now: time.Now, cache: make(map[string]cacheEntry)}
 }
 
 // withNow 注入时钟（测试用）。
@@ -61,6 +69,24 @@ func (s *Stats) resolveSeason(season int) int {
 		return s.now().Year()
 	}
 	return season
+}
+
+// loadMappings 拉取 DB 车手映射（Jolpica driverId → 站内车手）。
+// 失败返回 nil，调用方记录警告后走代码表兜底——积分榜不因 DB 故障瘫痪。
+func (s *Stats) loadMappings(ctx context.Context) map[string]domain.DriverMapping {
+	if s.maps == nil {
+		return nil
+	}
+	items, err := s.maps.ListDriverMappings(ctx)
+	if err != nil {
+		slog.Warn("driver mappings unavailable, fallback to code tables", "error", err)
+		return nil
+	}
+	m := make(map[string]domain.DriverMapping, len(items))
+	for _, it := range items {
+		m[it.JolpicaID] = it
+	}
+	return m
 }
 
 // get 命中缓存直接返回；未命中则调用 fetch。
@@ -141,6 +167,8 @@ func (s *Stats) buildSchedule(ctx context.Context, season int) (domain.Schedule,
 		}
 	}
 
+	maps := s.loadMappings(ctx)
+
 	today := s.now().Format("2006-01-02")
 	out := make([]domain.Race, 0, len(races))
 	for _, r := range races {
@@ -158,8 +186,8 @@ func (s *Stats) buildSchedule(ctx context.Context, season int) (domain.Schedule,
 		switch winner, ok := winnerByRound[round]; {
 		case ok:
 			race.Status = domain.RaceStatusCompleted
-			race.WinnerSlug = driverSlug(winner.DriverID)
-			race.WinnerName = driverNameZh(winner.DriverID, winner.GivenName, winner.FamilyName)
+			race.WinnerSlug = driverSlugWith(maps, winner.DriverID)
+			race.WinnerName = driverNameZhWith(maps, winner.DriverID, winner.GivenName, winner.FamilyName)
 		case r.Date < today:
 			race.Status = domain.RaceStatusCancelled
 		default:
@@ -176,6 +204,7 @@ func (s *Stats) buildDriverStandings(ctx context.Context, season int) (domain.Dr
 	if err != nil {
 		return domain.DriverStandings{}, err
 	}
+	maps := s.loadMappings(ctx)
 	items := make([]domain.DriverStandingRow, 0, len(rows))
 	for _, r := range rows {
 		pos, err := atoi(r.Position)
@@ -196,8 +225,8 @@ func (s *Stats) buildDriverStandings(ctx context.Context, season int) (domain.Dr
 		}
 		items = append(items, domain.DriverStandingRow{
 			Position:   pos,
-			DriverSlug: driverSlug(r.Driver.DriverID),
-			DriverName: driverNameZh(r.Driver.DriverID, r.Driver.GivenName, r.Driver.FamilyName),
+			DriverSlug: driverSlugWith(maps, r.Driver.DriverID),
+			DriverName: driverNameZhWith(maps, r.Driver.DriverID, r.Driver.GivenName, r.Driver.FamilyName),
 			Team:       domain.Team{Name: constructorZh(team), Color: constructorColor(team)},
 			Points:     points,
 			Wins:       wins,

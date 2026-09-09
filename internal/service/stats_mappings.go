@@ -1,6 +1,10 @@
 package service
 
-import "strings"
+import (
+	"strings"
+
+	"github.com/yantao-Wang/f1-guide/internal/domain"
+)
 
 // 上游英文数据 → 站内中文口径的映射表。
 // 数据来源：2026 赛季上游真实数据（2026-09 采集）。
@@ -87,8 +91,9 @@ func driverNameZh(id, given, family string) string {
 	return strings.TrimSpace(given + " " + family)
 }
 
-// driverSlugs 上游 driverId → 站内车手故事 slug。
-// 内容流水线每新增一篇车手故事，在此补一条映射。
+// driverSlugs 上游 driverId → 站内车手故事 slug 的代码表兜底。
+// 后台录入车手并填写 Jolpica ID 后，映射由数据库优先提供（见 driverSlugWith），
+// 本表仅在 DB 无此车手时兜底。
 var driverSlugs = map[string]string{
 	"max_verstappen": "max-verstappen",
 	"hamilton":       "lewis-hamilton",
@@ -101,12 +106,28 @@ var driverSlugs = map[string]string{
 	"zhou":           "zhou-guanyu",
 }
 
-// driverSlug 优先映射站内 slug，否则规范化为连字符形式。
+// driverSlug 代码表映射，否则规范化为连字符形式。
 func driverSlug(id string) string {
 	if slug, ok := driverSlugs[id]; ok {
 		return slug
 	}
 	return strings.ReplaceAll(id, "_", "-")
+}
+
+// driverSlugWith DB 映射优先（后台录入），代码表其次，最后归一化兜底。
+func driverSlugWith(maps map[string]domain.DriverMapping, id string) string {
+	if m, ok := maps[id]; ok {
+		return m.Slug
+	}
+	return driverSlug(id)
+}
+
+// driverNameZhWith DB 中文名优先（后台录入），代码表其次，最后上游英文全名。
+func driverNameZhWith(maps map[string]domain.DriverMapping, id, given, family string) string {
+	if m, ok := maps[id]; ok {
+		return m.Name
+	}
+	return driverNameZh(id, given, family)
 }
 
 var raceNamesZh = map[string]string{

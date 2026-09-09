@@ -27,6 +27,12 @@ make seed           # 导入示例数据（占位内容）
 make run
 ```
 
+启用管理后台（可选，不设密码则后台整体禁用）：
+
+```bash
+F1GUIDE_ADMIN_PASSWORD=你的密码 make run   # 打开 http://localhost:8080/admin
+```
+
 集成测试（真实 PostgreSQL）：
 
 ```bash
@@ -51,7 +57,17 @@ go test -tags=integration ./tests/integration/...
 - 本地内存 TTL 缓存：积分榜 30 分钟、赛程 1 小时（上游正赛后约 1 小时更新数据）
 - 上游地址可用 `F1API_BASE_URL` 覆盖；国内联调时指向本地代理
 - 降级策略：上游故障时页面渲染提示文案（首页/赛程/数据页均不中断），JSON API 返回 `502 upstream_unavailable`
-- 中文映射（车队色/车队名/车手名/大奖赛名/赛道名）维护于 `internal/service/stats_mappings.go`，新增内容车手时同步补 `driverSlugs`
+- 中文映射（车队色/车队名/车手名/大奖赛名/赛道名）维护于 `internal/service/stats_mappings.go`；车手 slug 与中文名优先取数据库（后台录入时填 Jolpica ID），代码表仅作兜底
+
+### 管理后台（/admin）
+
+内容（车手小传/赛道图鉴/名场面）经后台在线录入发布，不再走 seed 流水线：
+
+- **启用**：设置 `F1GUIDE_ADMIN_PASSWORD` 环境变量；未设置时不注册任何 /admin 路由（公网攻击面默认关闭）
+- **会话**：HMAC 签名 Cookie（7 天）+ 登录限流（5 次/15 分钟）+ CSRF 双重提交；`F1GUIDE_ADMIN_SECRET` 建议生产显式设置（缺省每次启动随机生成，重启后需重新登录）
+- **文件上传**：车手照片/赛道图存 `F1GUIDE_UPLOAD_DIR`（默认 ./uploads，Docker 部署必须挂卷），jpg/png/webp、≤8MB，经 /uploads/* 公开分发
+- **车手录入**：填 Jolpica ID（上游英文 driverId，如 max_verstappen）后，积分榜/赛程自动挂接站内故事链接（受积分榜 30 分钟缓存约束）
+- 生产部署建议：TLS 必开；可在 nginx 层对 /admin 追加 IP allow-list
 
 ### 故障排查
 

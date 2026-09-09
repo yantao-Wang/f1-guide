@@ -1,0 +1,110 @@
+{{define "admin_driver_form"}}{{template "admin_layout" .}}{{end}}
+
+{{define "content"}}
+{{$f := .Data.Body.Form}}
+{{$isEdit := .Data.Body.IsEdit}}
+<div class="admin-head">
+  <h1 class="admin-title">{{if $isEdit}}编辑车手{{else}}新增车手{{end}}</h1>
+  <a class="btn" href="/admin/drivers">← 返回列表</a>
+</div>
+
+<form class="form" method="post" enctype="multipart/form-data" action="{{if $isEdit}}/admin/drivers/{{.Data.Body.OldSlug}}/edit{{else}}/admin/drivers/new{{end}}">
+  <input type="hidden" name="csrf" value="{{.Data.CSRF}}">
+
+  <div class="form-grid">
+    <div class="form-field">
+      <label for="slug">slug *</label>
+      <input type="text" id="slug" name="slug" value="{{$f.Slug}}" required>
+      <p class="form-hint">URL 标识：小写字母数字与连字符，如 zhou-guanyu。修改会使旧链接失效。</p>
+      {{with index $f.Errors "slug"}}<p class="form-error">{{.}}</p>{{end}}
+    </div>
+    <div class="form-field">
+      <label for="name">车手姓名 *</label>
+      <input type="text" id="name" name="name" value="{{$f.Name}}" required>
+      {{with index $f.Errors "name"}}<p class="form-error">{{.}}</p>{{end}}
+    </div>
+    <div class="form-field">
+      <label for="team_name">车队名 *</label>
+      <input type="text" id="team_name" name="team_name" value="{{$f.TeamName}}" required>
+      {{with index $f.Errors "team_name"}}<p class="form-error">{{.}}</p>{{end}}
+    </div>
+    <div class="form-field">
+      <label for="team_color">车队主题色 *</label>
+      <input type="color" id="team_color" name="team_color" value="{{if $f.TeamColor}}{{$f.TeamColor}}{{else}}#E10600{{end}}">
+      {{with index $f.Errors "team_color"}}<p class="form-error">{{.}}</p>{{end}}
+    </div>
+    <div class="form-field">
+      <label for="number">车号 *</label>
+      <input type="number" id="number" name="number" value="{{$f.Number}}" min="1" max="99" required>
+      {{with index $f.Errors "number"}}<p class="form-error">{{.}}</p>{{end}}
+    </div>
+    <div class="form-field">
+      <label for="championships">世界冠军数 *</label>
+      <input type="number" id="championships" name="championships" value="{{if $f.Championships}}{{$f.Championships}}{{else}}0{{end}}" min="0" max="20" required>
+      {{with index $f.Errors "championships"}}<p class="form-error">{{.}}</p>{{end}}
+    </div>
+    <div class="form-field">
+      <label for="country">国籍 *</label>
+      <input type="text" id="country" name="country" value="{{$f.Country}}" required>
+      {{with index $f.Errors "country"}}<p class="form-error">{{.}}</p>{{end}}
+    </div>
+    <div class="form-field">
+      <label for="jolpica_id">Jolpica ID</label>
+      <input type="text" id="jolpica_id" name="jolpica_id" value="{{$f.JolpicaID}}" placeholder="max_verstappen">
+      <p class="form-hint">填写后积分榜/赛程自动挂接本站故事链接；与上游英文 ID 一致。</p>
+      {{with index $f.Errors "jolpica_id"}}<p class="form-error">{{.}}</p>{{end}}
+    </div>
+    <div class="form-field">
+      <label for="tagline">一句话人设 *</label>
+      <input type="text" id="tagline" name="tagline" value="{{$f.Tagline}}" required>
+      {{with index $f.Errors "tagline"}}<p class="form-error">{{.}}</p>{{end}}
+    </div>
+    <div class="form-field form-field-wide">
+      <label for="story">核心故事 *</label>
+      <textarea id="story" name="story" rows="14" required>{{$f.Story}}</textarea>
+      <p class="form-hint">纯文本，用空行分段（前台按空行渲染为段落）。建议 500-800 字。</p>
+      {{with index $f.Errors "story"}}<p class="form-error">{{.}}</p>{{end}}
+    </div>
+    <div class="form-field form-field-wide">
+      <label for="personality">性格标签</label>
+      <textarea id="personality" name="personality" rows="3" placeholder="每行一个标签">{{$f.PersonalityText}}</textarea>
+    </div>
+    <div class="form-field form-field-wide">
+      <label for="trivia">冷知识</label>
+      <textarea id="trivia" name="trivia" rows="3" placeholder="每行一条">{{$f.TriviaText}}</textarea>
+    </div>
+    <div class="form-field form-field-wide">
+      <label for="quote">名言金句 *</label>
+      <textarea id="quote" name="quote" rows="2" required>{{$f.Quote}}</textarea>
+      {{with index $f.Errors "quote"}}<p class="form-error">{{.}}</p>{{end}}
+    </div>
+    <div class="form-field form-field-wide">
+      <label for="image">车手照片</label>
+      {{if .Data.Body.CurrentImage}}
+      <img class="form-image" src="{{.Data.Body.CurrentImage}}" alt="当前照片">
+      <label class="form-check"><input type="checkbox" name="remove_image"> 清除现有照片</label>
+      {{end}}
+      <input type="file" id="image" name="image" accept="image/jpeg,image/png,image/webp">
+      <p class="form-hint">支持 jpg / png / webp，不超过 8MB。上传后前台详情页显示官方风格卡片，未上传则显示纯色卡片。</p>
+      {{with index $f.Errors "image"}}<p class="form-error">{{.}}</p>{{end}}
+    </div>
+    <div class="form-field form-field-wide">
+      <label class="form-check"><input type="checkbox" name="featured" {{if $f.Featured}}checked{{end}}> 设为首页精选</label>
+    </div>
+    <div class="form-field">
+      <label for="featured_race_year">推荐比赛年份</label>
+      <input type="number" id="featured_race_year" name="featured_race_year" value="{{$f.FeaturedRaceYear}}" min="1950" max="2030">
+      {{with index $f.Errors "featured_race_year"}}<p class="form-error">{{.}}</p>{{end}}
+    </div>
+    <div class="form-field">
+      <label for="featured_race_gp">推荐比赛名称</label>
+      <input type="text" id="featured_race_gp" name="featured_race_gp" value="{{$f.FeaturedRaceGP}}" placeholder="巴林大奖赛">
+    </div>
+  </div>
+
+  <div class="form-actions">
+    <button type="submit" class="btn btn-primary">{{if $isEdit}}保存修改{{else}}创建车手{{end}}</button>
+    <a class="btn" href="/admin/drivers">取消</a>
+  </div>
+</form>
+{{end}}

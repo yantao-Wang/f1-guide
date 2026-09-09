@@ -12,6 +12,7 @@ import (
 
 	"github.com/yantao-Wang/f1-guide/internal/config"
 	"github.com/yantao-Wang/f1-guide/internal/handler"
+	"github.com/yantao-Wang/f1-guide/internal/middleware"
 	"github.com/yantao-Wang/f1-guide/internal/repository"
 	"github.com/yantao-Wang/f1-guide/internal/router"
 	"github.com/yantao-Wang/f1-guide/internal/service"
@@ -47,7 +48,20 @@ func main() {
 		log.Error("init f1api client failed", "error", err)
 		os.Exit(1)
 	}
-	statsSvc := service.NewStats(statsClient)
+	statsSvc := service.NewStats(statsClient, repo)
+
+	// 管理后台：F1GUIDE_ADMIN_PASSWORD 未设置时整体禁用（不注册 /admin 路由，控制公网攻击面）
+	var adminHandler *handler.Admin
+	if cfg.AdminPassword != "" {
+		adminHandler = handler.NewAdmin(
+			service.NewAdmin(repo),
+			svc,
+			middleware.NewAdmin(cfg.AdminPassword, cfg.AdminSecret),
+			cfg.UploadDir,
+			log)
+	} else {
+		log.Warn("F1GUIDE_ADMIN_PASSWORD 未设置，管理后台已禁用")
+	}
 
 	srv := &http.Server{
 		Addr: cfg.HTTPAddr,
@@ -55,7 +69,9 @@ func main() {
 			handler.NewHealth(log),
 			handler.NewContent(svc),
 			handler.NewStats(statsSvc),
-			handler.NewPages(svc, statsSvc)),
+			handler.NewPages(svc, statsSvc),
+			adminHandler,
+			cfg.UploadDir),
 		ReadTimeout:  readTimeout,
 		WriteTimeout: writeTimeout,
 		IdleTimeout:  idleTimeout,

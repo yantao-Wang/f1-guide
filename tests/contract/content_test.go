@@ -75,8 +75,8 @@ func newAppRouter() http.Handler {
 		MomentDetail: testutil.SampleMoment(),
 	}
 	svc := service.NewContent(store, store, store)
-	statsSvc := service.NewStats(&testutil.FakeStatsClient{})
-	return router.New(log, handler.NewHealth(log), handler.NewContent(svc), handler.NewStats(statsSvc), handler.NewPages(svc, statsSvc))
+	statsSvc := service.NewStats(&testutil.FakeStatsClient{}, nil)
+	return router.New(log, handler.NewHealth(log), handler.NewContent(svc), handler.NewStats(statsSvc), handler.NewPages(svc, statsSvc), nil, "")
 }
 
 // validateResponse 用 kin-openapi 校验实际响应符合契约。
@@ -174,8 +174,8 @@ func TestUpstreamErrorResponseMatchesContract(t *testing.T) {
 	log := slog.New(slog.NewTextHandler(io.Discard, nil))
 	store := &testutil.FakeStore{}
 	svc := service.NewContent(store, store, store)
-	statsSvc := service.NewStats(&testutil.FakeStatsClient{Err: errors.New("upstream down")})
-	appRouter := router.New(log, handler.NewHealth(log), handler.NewContent(svc), handler.NewStats(statsSvc), handler.NewPages(svc, statsSvc))
+	statsSvc := service.NewStats(&testutil.FakeStatsClient{Err: errors.New("upstream down")}, nil)
+	appRouter := router.New(log, handler.NewHealth(log), handler.NewContent(svc), handler.NewStats(statsSvc), handler.NewPages(svc, statsSvc), nil, "")
 
 	for _, target := range []string{
 		"/api/v1/schedule",

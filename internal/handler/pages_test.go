@@ -15,11 +15,11 @@ import (
 )
 
 func newTestPages(store *testutil.FakeStore) *Pages {
-	return NewPages(service.NewContent(store, store, store), service.NewStats(&testutil.FakeStatsClient{}))
+	return NewPages(service.NewContent(store, store, store), service.NewStats(&testutil.FakeStatsClient{}, store))
 }
 
 func newTestPagesWithStats(store *testutil.FakeStore, stats *testutil.FakeStatsClient) *Pages {
-	return NewPages(service.NewContent(store, store, store), service.NewStats(stats))
+	return NewPages(service.NewContent(store, store, store), service.NewStats(stats, store))
 }
 
 func fullStore() *testutil.FakeStore {

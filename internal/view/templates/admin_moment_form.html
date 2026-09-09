@@ -1,0 +1,88 @@
+{{define "admin_moment_form"}}{{template "admin_layout" .}}{{end}}
+
+{{define "content"}}
+{{$f := .Data.Body.Form}}
+{{$isEdit := .Data.Body.IsEdit}}
+<div class="admin-head">
+  <h1 class="admin-title">{{if $isEdit}}编辑名场面{{else}}新增名场面{{end}}</h1>
+  <a class="btn" href="/admin/moments">← 返回列表</a>
+</div>
+
+<form class="form" method="post" action="{{if $isEdit}}/admin/moments/{{.Data.Body.OldSlug}}/edit{{else}}/admin/moments/new{{end}}">
+  <input type="hidden" name="csrf" value="{{.Data.CSRF}}">
+
+  <div class="form-grid">
+    <div class="form-field">
+      <label for="slug">slug *</label>
+      <input type="text" id="slug" name="slug" value="{{$f.Slug}}" required>
+      <p class="form-hint">URL 标识：小写字母数字与连字符，如 2021-abu-dhabi。修改会使旧链接失效。</p>
+      {{with index $f.Errors "slug"}}<p class="form-error">{{.}}</p>{{end}}
+    </div>
+    <div class="form-field">
+      <label for="title">标题 *</label>
+      <input type="text" id="title" name="title" value="{{$f.Title}}" required>
+      {{with index $f.Errors "title"}}<p class="form-error">{{.}}</p>{{end}}
+    </div>
+    <div class="form-field">
+      <label for="year">年份 *</label>
+      <input type="number" id="year" name="year" value="{{$f.Year}}" min="1950" max="2030" required>
+      {{with index $f.Errors "year"}}<p class="form-error">{{.}}</p>{{end}}
+    </div>
+    <div class="form-field">
+      <label for="grand_prix">比赛名称 *</label>
+      <input type="text" id="grand_prix" name="grand_prix" value="{{$f.GrandPrix}}" placeholder="阿布扎比大奖赛" required>
+      {{with index $f.Errors "grand_prix"}}<p class="form-error">{{.}}</p>{{end}}
+    </div>
+    <div class="form-field">
+      <label for="type">类型 *</label>
+      <select id="type" name="type" required>
+        <option value="championship" {{if eq $f.Type "championship"}}selected{{end}}>冠军争夺</option>
+        <option value="overtake" {{if eq $f.Type "overtake"}}selected{{end}}>经典超车</option>
+        <option value="safety" {{if eq $f.Type "safety"}}selected{{end}}>事故安全</option>
+        <option value="rain" {{if eq $f.Type "rain"}}selected{{end}}>雨战传奇</option>
+      </select>
+      {{with index $f.Errors "type"}}<p class="form-error">{{.}}</p>{{end}}
+    </div>
+    <div class="form-field form-field-wide">
+      <label for="background">现场背景 *</label>
+      <textarea id="background" name="background" rows="8" required>{{$f.Background}}</textarea>
+      <p class="form-hint">纯文本，用空行分段。</p>
+      {{with index $f.Errors "background"}}<p class="form-error">{{.}}</p>{{end}}
+    </div>
+    <div class="form-field form-field-wide">
+      <label for="why_classic">为什么经典 *</label>
+      <textarea id="why_classic" name="why_classic" rows="6" required>{{$f.WhyClassic}}</textarea>
+      {{with index $f.Errors "why_classic"}}<p class="form-error">{{.}}</p>{{end}}
+    </div>
+    <div class="form-field">
+      <label for="video_url">视频链接</label>
+      <input type="text" id="video_url" name="video_url" value="{{$f.VideoURL}}" placeholder="https://www.bilibili.com/video/...">
+      {{with index $f.Errors "video_url"}}<p class="form-error">{{.}}</p>{{end}}
+    </div>
+    <div class="form-field">
+      <label for="track_slug">关联赛道</label>
+      <select id="track_slug" name="track_slug">
+        <option value="">（无）</option>
+        {{range .Data.Body.Tracks}}
+        <option value="{{.Slug}}" {{if eq .Slug $f.TrackSlug}}selected{{end}}>{{.Name}}</option>
+        {{end}}
+      </select>
+    </div>
+    <div class="form-field form-field-wide">
+      <label>关联车手</label>
+      <div class="form-checks">
+        {{range .Data.Body.Drivers}}
+        <label class="form-check"><input type="checkbox" name="driver_slugs" value="{{.Slug}}" {{if contains $f.DriverSlugs .Slug}}checked{{end}}> {{.Name}}</label>
+        {{else}}
+        <p class="form-hint">暂无车手可选，先创建车手再来关联</p>
+        {{end}}
+      </div>
+    </div>
+  </div>
+
+  <div class="form-actions">
+    <button type="submit" class="btn btn-primary">{{if $isEdit}}保存修改{{else}}创建名场面{{end}}</button>
+    <a class="btn" href="/admin/moments">取消</a>
+  </div>
+</form>
+{{end}}

@@ -16,7 +16,7 @@ import (
 )
 
 func newTestStatsHandler(client *testutil.FakeStatsClient) *Stats {
-	return NewStats(service.NewStats(client))
+	return NewStats(service.NewStats(client, nil))
 }
 
 func TestScheduleEndpoint(t *testing.T) {
