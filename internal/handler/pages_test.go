@@ -169,12 +169,12 @@ func TestStubPage(t *testing.T) {
 	pages := newTestPages(&testutil.FakeStore{})
 
 	rec := httptest.NewRecorder()
-	pages.StubPage("格子棋", "敬请期待")(rec, httptest.NewRequest(http.MethodGet, "/game", nil))
+	pages.StubPage("方格旗预言", "敬请期待")(rec, httptest.NewRequest(http.MethodGet, "/game", nil))
 
 	if rec.Code != http.StatusOK {
 		t.Fatalf("status = %d, want %d", rec.Code, http.StatusOK)
 	}
-	if !strings.Contains(rec.Body.String(), "格子棋") || !strings.Contains(rec.Body.String(), "敬请期待") {
+	if !strings.Contains(rec.Body.String(), "方格旗预言") || !strings.Contains(rec.Body.String(), "敬请期待") {
 		t.Fatalf("占位页内容缺失: %s", rec.Body.String()[:200])
 	}
 }

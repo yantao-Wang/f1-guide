@@ -378,7 +378,7 @@ func (h *Pages) Data(w http.ResponseWriter, r *http.Request) {
 	})
 }
 
-// StubPage 生成"敬请期待"占位页处理器（赛程/赛事数据/格子棋/新手测验）。
+// StubPage 生成"敬请期待"占位页处理器（赛程/赛事数据/方格旗预言/新手测验）。
 func (h *Pages) StubPage(title, hint string) http.HandlerFunc {
 	return func(w http.ResponseWriter, _ *http.Request) {
 		renderPage(w, "stub", view.Page{

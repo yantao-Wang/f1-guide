@@ -201,11 +201,47 @@ a { color: inherit; text-decoration: none; }
 .entry-card h3 { font-size: 1.1rem; margin-bottom: 6px; }
 .entry-card p { color: var(--text-muted); font-size: 0.88rem; }
 
-/* ---------- 车手卡片 ---------- */
+/* ---------- 车手卡片（F1 官方风格：大车号 + 队色；有照片时整卡背景） ---------- */
 .driver-card {
-  border-top: 3px solid var(--team-color, var(--border));
+  position: relative;
+  overflow: hidden;
+  min-height: 300px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  border-top: 3px solid var(--team-color, var(--brand));
+  background-size: cover;
+  background-position: center top;
 }
-.driver-card h3 { font-size: 1.15rem; }
+/* 右下斜向队色光带，呼应 F1 官方卡片的几何装饰 */
+.driver-card::after {
+  content: "";
+  position: absolute;
+  right: -30%;
+  bottom: -55%;
+  width: 95%;
+  height: 60%;
+  background: var(--team-color, var(--brand));
+  opacity: 0.1;
+  transform: rotate(-9deg);
+  pointer-events: none;
+  transition: opacity 0.15s;
+}
+.driver-card:hover { transform: translateY(-2px); }
+.driver-card:hover::after { opacity: 0.18; }
+
+.driver-card-top,
+.driver-card-body { position: relative; z-index: 1; }
+
+.driver-number {
+  font-size: 3rem;
+  font-weight: 900;
+  font-style: italic;
+  line-height: 1;
+  color: var(--team-color, var(--brand));
+  text-shadow: 0 0 16px color-mix(in srgb, var(--team-color, var(--brand)) 40%, transparent);
+}
+.driver-name { font-size: 1.25rem; font-weight: 700; letter-spacing: 0.02em; }
 .driver-team { color: var(--text-muted); font-size: 0.85rem; margin: 2px 0 8px; }
 .driver-tagline {
   color: var(--text-secondary);
@@ -215,6 +251,27 @@ a { color: inherit; text-decoration: none; }
   -webkit-box-orient: vertical;
   overflow: hidden;
 }
+
+/* 有照片：照片铺满整卡（F1 游戏角色卡样式），底部渐变压暗保证文字可读 */
+.driver-card.has-photo {
+  border-top: none;
+  border-bottom: 3px solid var(--team-color, var(--brand));
+}
+.driver-card.has-photo::after {
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  transform: none;
+  opacity: 1;
+  background: linear-gradient(to top, rgba(10, 10, 10, 0.94), rgba(10, 10, 10, 0.45) 48%, rgba(10, 10, 10, 0.08));
+}
+.driver-card.has-photo:hover::after { opacity: 1; }
+.driver-card.has-photo .driver-number {
+  font-size: 3.4rem;
+  text-shadow: 0 2px 14px rgba(0, 0, 0, 0.8);
+}
+.driver-card.has-photo .driver-team { color: #ffffff; opacity: 0.85; }
+.driver-card.has-photo .driver-tagline { color: #d0d0d0; }
 
 /* ---------- 赛道 / 名场面卡片 ---------- */
 .track-card h3 { font-size: 1.1rem; margin-bottom: 4px; }

@@ -6,6 +6,8 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"net/url"
+	"os"
+	"path/filepath"
 	"strings"
 	"testing"
 
@@ -20,7 +22,7 @@ func newTestRouter() http.Handler {
 	return newTestRouterWithAdmin(nil, "")
 }
 
-// newTestRouterWithAdmin 组装带后台的测试路由器（admin 非 nil 时启用 /admin 与 /uploads）。
+// newTestRouterWithAdmin 组装带后台的测试路由器（admin 非 nil 时启用 /admin；uploadDir 非空时启用 /uploads）。
 func newTestRouterWithAdmin(admin *handler.Admin, uploadDir string) http.Handler {
 	log := slog.New(slog.NewTextHandler(io.Discard, nil))
 	store := &testutil.FakeStore{}
@@ -112,6 +114,29 @@ func TestAdminDisabledByDefault(t *testing.T) {
 	r.ServeHTTP(rec, httptest.NewRequest(http.MethodGet, "/admin/login", nil))
 	if rec.Code != http.StatusNotFound {
 		t.Fatalf("后台禁用时 /admin/login status = %d, want 404", rec.Code)
+	}
+}
+
+func TestUploadsServedWithoutAdmin(t *testing.T) {
+	dir := t.TempDir()
+	if err := os.WriteFile(filepath.Join(dir, "p.png"), []byte("x"), 0o644); err != nil {
+		t.Fatal(err)
+	}
+
+	// 后台禁用（admin = nil）但 uploadDir 已设置：/uploads 应照常分发
+	r := newTestRouterWithAdmin(nil, dir)
+	rec := httptest.NewRecorder()
+	r.ServeHTTP(rec, httptest.NewRequest(http.MethodGet, "/uploads/p.png", nil))
+	if rec.Code != http.StatusOK {
+		t.Fatalf("后台禁用时 /uploads status = %d, want 200", rec.Code)
+	}
+
+	// uploadDir 未设置：/uploads 不注册（404）
+	r = newTestRouter() // uploadDir = ""
+	rec = httptest.NewRecorder()
+	r.ServeHTTP(rec, httptest.NewRequest(http.MethodGet, "/uploads/p.png", nil))
+	if rec.Code != http.StatusNotFound {
+		t.Fatalf("未设置 uploadDir 时 /uploads status = %d, want 404", rec.Code)
 	}
 }
 

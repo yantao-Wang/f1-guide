@@ -17,10 +17,11 @@ type FeaturedRace struct {
 type DriverSummary struct {
 	Slug     string `json:"slug"`
 	Name     string `json:"name"`
+	Number   int    `json:"number"`
 	Tagline  string `json:"tagline"`
 	Team     Team   `json:"team"`
 	Featured bool   `json:"featured"`
-	// ImageURL 车手照片路径，仅后台列表页使用，不进公开 JSON（契约不变）。
+	// ImageURL 车手照片路径（/uploads 前缀），SSR 车手卡片显示用，不进公开 JSON（契约不变）。
 	ImageURL string `json:"-"`
 }
 

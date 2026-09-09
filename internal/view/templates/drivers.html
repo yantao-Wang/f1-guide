@@ -6,10 +6,17 @@
 
 <div class="grid">
   {{range .Data.Drivers}}
-  <a class="card driver-card" href="/stories/drivers/{{.Slug}}" style="--team-color: {{.Team.Color}}">
-    <h3>{{.Name}}</h3>
-    <p class="driver-team">{{.Team.Name}}</p>
-    <p class="driver-tagline">{{.Tagline}}</p>
+  <a class="card driver-card{{if .ImageURL}} has-photo{{end}}" href="/stories/drivers/{{.Slug}}" style="--team-color: {{.Team.Color}}{{if .ImageURL}}; background-image: url('{{.ImageURL}}'){{end}}">
+    {{if .Number}}
+    <div class="driver-card-top">
+      <span class="driver-number">{{.Number}}</span>
+    </div>
+    {{end}}
+    <div class="driver-card-body">
+      <h3 class="driver-name">{{.Name}}</h3>
+      <p class="driver-team">{{.Team.Name}}</p>
+      <p class="driver-tagline">{{.Tagline}}</p>
+    </div>
   </a>
   {{end}}
 </div>

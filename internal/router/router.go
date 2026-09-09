@@ -48,18 +48,21 @@ func New(log *slog.Logger, health *handler.Health, content *handler.Content, sta
 	r.Get("/stories/moments/{slug}", pages.Moment)
 	r.Get("/schedule", pages.Schedule)
 	r.Get("/data", pages.Data)
-	r.Get("/game", pages.StubPage("格子棋", "每站预测前十名，积分竞猜 —— 2027 赛季揭幕前正式上线"))
+	r.Get("/game", pages.StubPage("方格旗预言", "每站预测前十名，积分竞猜 —— 2027 赛季揭幕前正式上线"))
 	r.Get("/quiz", pages.StubPage("新手测验", "5 道趣味选择题，测测你是哪个 F1 车手 —— 敬请期待"))
 	r.Get("/about", pages.About)
 
 	// 静态资源（CSS 等，embed 分发）
 	r.Handle("/static/*", view.Static())
 
-	// 管理后台：admin 未启用时不注册（404），上传目录分发同理
+	// 上传文件分发：公开页面的内容图片（车手照/赛道图），独立于后台开关；
+	// 后台关闭时已发布的内容仍能正常显示图片
+	if uploadDir != "" {
+		r.Handle("/uploads/*", handler.Uploads(uploadDir))
+	}
+
+	// 管理后台：admin 未启用时不注册（404），攻击面默认关闭
 	if admin != nil {
-		if uploadDir != "" {
-			r.Handle("/uploads/*", handler.Uploads(uploadDir))
-		}
 		registerAdminRoutes(r, admin)
 	}
 

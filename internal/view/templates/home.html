@@ -3,10 +3,10 @@
 {{define "content"}}
 <section class="hero">
   <h1>从零开始，看懂F1的精彩</h1>
-  <p class="hero-sub">车手故事 · 赛道图鉴 · 名场面 · 赛事数据 · 格子棋 —— 一站式 F1 观赛指南</p>
+  <p class="hero-sub">车手故事 · 赛道图鉴 · 名场面 · 赛事数据 · 方格旗预言 —— 一站式 F1 观赛指南</p>
   <div class="hero-actions">
     <a class="btn btn-primary" href="/stories/drivers">开始认识车手</a>
-    <a class="btn" href="/game">🎮 去玩格子棋</a>
+    <a class="btn" href="/game">🏁 去玩方格旗预言</a>
   </div>
   <div class="hero-stats">
     <span><strong>{{.Data.DriverCount}}</strong> 位车手故事</span>
@@ -32,8 +32,8 @@
     <p>F1 历史上最戏剧性的瞬间</p>
   </a>
   <a class="card entry-card" href="/game">
-    <span class="entry-emoji">🎮</span>
-    <h3>格子棋</h3>
+    <span class="entry-emoji">🏁</span>
+    <h3>方格旗预言</h3>
     <p>每站预测前十名，积分竞猜</p>
   </a>
 </section>
@@ -45,10 +45,17 @@
   </div>
   <div class="grid">
     {{range .Data.Featured}}
-    <a class="card driver-card" href="/stories/drivers/{{.Slug}}" style="--team-color: {{.Team.Color}}">
-      <h3>{{.Name}}</h3>
-      <p class="driver-team">{{.Team.Name}}</p>
-      <p class="driver-tagline">{{.Tagline}}</p>
+    <a class="card driver-card{{if .ImageURL}} has-photo{{end}}" href="/stories/drivers/{{.Slug}}" style="--team-color: {{.Team.Color}}{{if .ImageURL}}; background-image: url('{{.ImageURL}}'){{end}}">
+      {{if .Number}}
+      <div class="driver-card-top">
+        <span class="driver-number">{{.Number}}</span>
+      </div>
+      {{end}}
+      <div class="driver-card-body">
+        <h3 class="driver-name">{{.Name}}</h3>
+        <p class="driver-team">{{.Team.Name}}</p>
+        <p class="driver-tagline">{{.Tagline}}</p>
+      </div>
     </a>
     {{end}}
   </div>

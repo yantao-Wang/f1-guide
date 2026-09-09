@@ -34,7 +34,7 @@ type driverRow struct {
 // 排序为入库顺序（内容首发优先级）。
 func (p *Postgres) ListDrivers(ctx context.Context, featured *bool) ([]domain.DriverSummary, error) {
 	rows, err := p.db.QueryxContext(ctx, `
-		SELECT slug, name, tagline, team_name, team_color, featured, image_url
+		SELECT slug, name, number, tagline, team_name, team_color, featured, image_url
 		FROM drivers
 		WHERE ($1::boolean IS NULL OR featured = $1)
 		ORDER BY id`, featured)
@@ -48,6 +48,7 @@ func (p *Postgres) ListDrivers(ctx context.Context, featured *bool) ([]domain.Dr
 		var r struct {
 			Slug      string  `db:"slug"`
 			Name      string  `db:"name"`
+			Number    int     `db:"number"`
 			Tagline   string  `db:"tagline"`
 			TeamName  string  `db:"team_name"`
 			TeamColor string  `db:"team_color"`
@@ -60,6 +61,7 @@ func (p *Postgres) ListDrivers(ctx context.Context, featured *bool) ([]domain.Dr
 		item := domain.DriverSummary{
 			Slug:     r.Slug,
 			Name:     r.Name,
+			Number:   r.Number,
 			Tagline:  r.Tagline,
 			Team:     domain.Team{Name: r.TeamName, Color: r.TeamColor},
 			Featured: r.Featured,
